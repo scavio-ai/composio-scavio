@@ -1,0 +1,5291 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Scavio Search API",
+    "version": "1.0.0",
+    "description": "Real-time structured search over Google, YouTube, Amazon, Walmart, Reddit, TikTok, and Instagram."
+  },
+  "servers": [
+    {
+      "url": "https://api.scavio.dev"
+    }
+  ],
+  "security": [
+    {
+      "Bearer": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Your Scavio API key, sent as 'Authorization: Bearer <key>'."
+      }
+    },
+    "schemas": {},
+    "parameters": {}
+  },
+  "paths": {
+    "/api/v1/google": {
+      "post": {
+        "tags": [
+          "Google"
+        ],
+        "summary": "Google Search",
+        "description": "Perform a Google search and get structured results.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "pizza new york"
+                  },
+                  "country_code": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "default": "us",
+                    "example": "us",
+                    "description": "ISO 3166-1 alpha-2 country code"
+                  },
+                  "language": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 5,
+                    "default": "en",
+                    "example": "en",
+                    "description": "Language code (e.g. en, fr, de)"
+                  },
+                  "page": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 1,
+                    "example": 1,
+                    "description": "Page number (default 1)"
+                  },
+                  "search_type": {
+                    "type": "string",
+                    "enum": [
+                      "classic",
+                      "news",
+                      "maps",
+                      "images",
+                      "lens"
+                    ],
+                    "default": "classic",
+                    "example": "classic",
+                    "description": "Type of Google search"
+                  },
+                  "device": {
+                    "type": "string",
+                    "enum": [
+                      "desktop",
+                      "mobile"
+                    ],
+                    "example": "desktop",
+                    "description": "Device type for search results"
+                  },
+                  "nfpr": {
+                    "type": "boolean",
+                    "example": false,
+                    "description": "Disable autocorrection when true"
+                  },
+                  "light_request": {
+                    "type": "boolean",
+                    "example": false,
+                    "description": "Set to false for full results (2 credits). Omit for light mode (1 credit)."
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": {
+                      "type": "string"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "top_stories": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "news_results": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "knowledge_graph": {
+                      "nullable": true
+                    },
+                    "local_results": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "map_results": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "questions": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "related_searches": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "related_queries": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "images": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "meta_data": {
+                      "nullable": true
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "country_code": {
+                      "type": "string"
+                    },
+                    "language": {
+                      "type": "string"
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "query",
+                    "results",
+                    "top_stories",
+                    "page",
+                    "country_code",
+                    "language",
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameter combination",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Upstream provider unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/search": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Search",
+        "description": "Search YouTube and get structured results.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "360": {
+                    "type": "boolean",
+                    "description": "360-degree videos only"
+                  },
+                  "search": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "javascript tutorial"
+                  },
+                  "upload_date": {
+                    "type": "string",
+                    "enum": [
+                      "last_hour",
+                      "today",
+                      "this_week",
+                      "this_month",
+                      "this_year"
+                    ],
+                    "description": "Filter by upload date"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "video",
+                      "channel",
+                      "playlist"
+                    ],
+                    "description": "Filter by result type"
+                  },
+                  "duration": {
+                    "type": "string",
+                    "enum": [
+                      "short",
+                      "medium",
+                      "long"
+                    ],
+                    "description": "Filter by video duration"
+                  },
+                  "sort_by": {
+                    "type": "string",
+                    "enum": [
+                      "relevance",
+                      "date",
+                      "view_count",
+                      "rating"
+                    ],
+                    "description": "Sort order for results"
+                  },
+                  "hd": {
+                    "type": "boolean",
+                    "description": "HD videos only"
+                  },
+                  "4k": {
+                    "type": "boolean",
+                    "description": "4K videos only"
+                  },
+                  "subtitles": {
+                    "type": "boolean",
+                    "description": "Videos with subtitles only"
+                  },
+                  "creative_commons": {
+                    "type": "boolean",
+                    "description": "Creative Commons license only"
+                  },
+                  "live": {
+                    "type": "boolean",
+                    "description": "Live videos only"
+                  },
+                  "3d": {
+                    "type": "boolean",
+                    "description": "3D videos only"
+                  },
+                  "hdr": {
+                    "type": "boolean",
+                    "description": "HDR videos only"
+                  },
+                  "location": {
+                    "type": "boolean",
+                    "description": "Videos with location only"
+                  },
+                  "vr180": {
+                    "type": "boolean",
+                    "description": "VR180 videos only"
+                  }
+                },
+                "required": [
+                  "search"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Upstream provider unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/metadata": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Video Metadata",
+        "description": "Get metadata for a YouTube video.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "video_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "dQw4w9WgXcQ"
+                  }
+                },
+                "required": [
+                  "video_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Video metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Upstream provider unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/amazon/search": {
+      "post": {
+        "tags": [
+          "Amazon"
+        ],
+        "summary": "Amazon Product Search",
+        "description": "Search Amazon products and get structured results.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "wireless headphones"
+                  },
+                  "domain": {
+                    "type": "string",
+                    "description": "Amazon domain suffix. Defaults to com (United States).",
+                    "example": "com"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Country code"
+                  },
+                  "language": {
+                    "type": "string",
+                    "description": "Language code"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "description": "Currency code"
+                  },
+                  "device": {
+                    "type": "string",
+                    "enum": [
+                      "desktop",
+                      "mobile",
+                      "tablet"
+                    ],
+                    "description": "Device type"
+                  },
+                  "sort_by": {
+                    "type": "string",
+                    "enum": [
+                      "most_recent",
+                      "price_low_to_high",
+                      "price_high_to_low",
+                      "featured",
+                      "average_review",
+                      "bestsellers"
+                    ],
+                    "description": "Sort order for results"
+                  },
+                  "start_page": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Starting page number"
+                  },
+                  "pages": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Number of pages to return"
+                  },
+                  "category_id": {
+                    "type": "string",
+                    "description": "Amazon category ID"
+                  },
+                  "merchant_id": {
+                    "type": "string",
+                    "description": "Amazon merchant ID"
+                  },
+                  "zip_code": {
+                    "type": "string",
+                    "description": "ZIP code for localized results"
+                  },
+                  "autoselect_variant": {
+                    "type": "boolean",
+                    "description": "Auto-select product variant"
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Upstream provider unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/amazon/product": {
+      "post": {
+        "tags": [
+          "Amazon"
+        ],
+        "summary": "Amazon Product Details",
+        "description": "Get details for an Amazon product by ASIN.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "B09V3KXJPB",
+                    "description": "Amazon ASIN"
+                  },
+                  "domain": {
+                    "type": "string",
+                    "description": "Amazon domain suffix. Defaults to com (United States).",
+                    "example": "com"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Country code"
+                  },
+                  "language": {
+                    "type": "string",
+                    "description": "Language code"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "description": "Currency code"
+                  },
+                  "device": {
+                    "type": "string",
+                    "enum": [
+                      "desktop",
+                      "mobile",
+                      "tablet"
+                    ],
+                    "description": "Device type"
+                  },
+                  "zip_code": {
+                    "type": "string",
+                    "description": "ZIP code for localized results"
+                  },
+                  "autoselect_variant": {
+                    "type": "boolean",
+                    "description": "Auto-select product variant"
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Upstream provider unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/walmart/search": {
+      "post": {
+        "tags": [
+          "Walmart"
+        ],
+        "summary": "Walmart Product Search",
+        "description": "Search Walmart products and get structured results.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "wireless headphones"
+                  },
+                  "domain": {
+                    "type": "string",
+                    "description": "Walmart domain"
+                  },
+                  "device": {
+                    "type": "string",
+                    "enum": [
+                      "desktop",
+                      "mobile",
+                      "tablet"
+                    ],
+                    "description": "Device type"
+                  },
+                  "sort_by": {
+                    "type": "string",
+                    "enum": [
+                      "best_match",
+                      "price_low",
+                      "price_high",
+                      "best_seller"
+                    ],
+                    "description": "Sort order for results"
+                  },
+                  "start_page": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Starting page number"
+                  },
+                  "min_price": {
+                    "type": "integer",
+                    "description": "Minimum price filter"
+                  },
+                  "max_price": {
+                    "type": "integer",
+                    "description": "Maximum price filter"
+                  },
+                  "fulfillment_speed": {
+                    "type": "string",
+                    "enum": [
+                      "today",
+                      "tomorrow",
+                      "2_days",
+                      "anytime"
+                    ],
+                    "description": "Fulfillment speed filter"
+                  },
+                  "fulfillment_type": {
+                    "type": "string",
+                    "enum": [
+                      "in_store"
+                    ],
+                    "description": "Fulfillment type filter"
+                  },
+                  "delivery_zip": {
+                    "type": "string",
+                    "description": "Delivery ZIP code"
+                  },
+                  "store_id": {
+                    "type": "string",
+                    "description": "Walmart store ID"
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Upstream provider unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/walmart/product": {
+      "post": {
+        "tags": [
+          "Walmart"
+        ],
+        "summary": "Walmart Product Details",
+        "description": "Get details for a Walmart product by product ID.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "123456789",
+                    "description": "Walmart product ID"
+                  },
+                  "domain": {
+                    "type": "string",
+                    "description": "Walmart domain"
+                  },
+                  "device": {
+                    "type": "string",
+                    "enum": [
+                      "desktop",
+                      "mobile",
+                      "tablet"
+                    ],
+                    "description": "Device type"
+                  },
+                  "delivery_zip": {
+                    "type": "string",
+                    "description": "Delivery ZIP code"
+                  },
+                  "store_id": {
+                    "type": "string",
+                    "description": "Walmart store ID"
+                  }
+                },
+                "required": [
+                  "product_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Upstream provider unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reddit/search": {
+      "post": {
+        "tags": [
+          "Reddit"
+        ],
+        "summary": "Reddit Search",
+        "description": "Search Reddit posts and get structured results.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "serpapi"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "posts",
+                      "comments"
+                    ],
+                    "default": "posts",
+                    "description": "Type of search results",
+                    "example": "posts"
+                  },
+                  "sort": {
+                    "type": "string",
+                    "enum": [
+                      "new",
+                      "relevance",
+                      "hot",
+                      "top",
+                      "comments"
+                    ],
+                    "default": "new",
+                    "description": "Sort order for results",
+                    "example": "new"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor from previous response"
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "searchQuery": {
+                          "type": "string"
+                        },
+                        "totalResults": {
+                          "type": "number"
+                        },
+                        "nextCursor": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "posts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "position": {
+                                "type": "number"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "url": {
+                                "type": "string"
+                              },
+                              "subreddit": {
+                                "type": "string"
+                              },
+                              "author": {
+                                "type": "string"
+                              },
+                              "timestamp": {
+                                "type": "string"
+                              },
+                              "nsfw": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "position",
+                              "id",
+                              "title",
+                              "url",
+                              "subreddit",
+                              "author",
+                              "timestamp",
+                              "nsfw"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "searchQuery",
+                        "totalResults",
+                        "nextCursor",
+                        "posts"
+                      ]
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Upstream provider unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reddit/post": {
+      "post": {
+        "tags": [
+          "Reddit"
+        ],
+        "summary": "Reddit Post Detail",
+        "description": "Fetch a Reddit post's metadata plus its comment thread (flat list with depth).",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Full Reddit post URL (e.g. returned by /reddit/search).",
+                    "example": "https://www.reddit.com/r/programming/comments/abc123/example/"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Post metadata and comments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "post": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "author": {
+                              "type": "string"
+                            },
+                            "subreddit": {
+                              "type": "string"
+                            },
+                            "url": {
+                              "type": "string"
+                            },
+                            "contentUrl": {
+                              "type": "string"
+                            },
+                            "permalink": {
+                              "type": "string"
+                            },
+                            "body": {
+                              "type": "string"
+                            },
+                            "score": {
+                              "type": "number"
+                            },
+                            "commentCount": {
+                              "type": "number"
+                            },
+                            "awardCount": {
+                              "type": "number"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "nsfw": {
+                              "type": "boolean"
+                            },
+                            "postType": {
+                              "type": "string"
+                            },
+                            "domain": {
+                              "type": "string"
+                            },
+                            "flair": {
+                              "type": "object",
+                              "nullable": true,
+                              "properties": {
+                                "text": {
+                                  "type": "string"
+                                },
+                                "url": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "text",
+                                "url"
+                              ]
+                            },
+                            "featuredAward": {
+                              "type": "object",
+                              "nullable": true,
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "iconUrl": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "iconUrl"
+                              ]
+                            },
+                            "media": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "enum": [
+                                      "image",
+                                      "video"
+                                    ]
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "url"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "title",
+                            "author",
+                            "subreddit",
+                            "url",
+                            "contentUrl",
+                            "permalink",
+                            "body",
+                            "score",
+                            "commentCount",
+                            "awardCount",
+                            "timestamp",
+                            "nsfw",
+                            "postType",
+                            "domain",
+                            "flair",
+                            "featuredAward",
+                            "media"
+                          ]
+                        },
+                        "comments": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "author": {
+                                "type": "string"
+                              },
+                              "body": {
+                                "type": "string"
+                              },
+                              "score": {
+                                "type": "number"
+                              },
+                              "depth": {
+                                "type": "number"
+                              },
+                              "timestamp": {
+                                "type": "string"
+                              },
+                              "permalink": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "author",
+                              "body",
+                              "score",
+                              "depth",
+                              "timestamp",
+                              "permalink"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "post",
+                        "comments"
+                      ]
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Reddit post URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Upstream provider unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tiktok/profile": {
+      "post": {
+        "tags": [
+          "TikTok"
+        ],
+        "summary": "TikTok User Profile",
+        "description": "Get a TikTok user profile by username or sec_user_id.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "tiktok"
+                  },
+                  "sec_user_id": {
+                    "type": "string",
+                    "example": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tiktok/user/posts": {
+      "post": {
+        "tags": [
+          "TikTok"
+        ],
+        "summary": "TikTok User Posts",
+        "description": "Get a TikTok user's video list.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sec_user_id": {
+                    "type": "string",
+                    "example": ""
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "default": "0",
+                    "description": "Pagination cursor"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "default": 20,
+                    "description": "Number of results"
+                  },
+                  "sort_type": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
+                    "description": "0 = latest, 1 = popular"
+                  }
+                },
+                "required": [
+                  "sec_user_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User videos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tiktok/video": {
+      "post": {
+        "tags": [
+          "TikTok"
+        ],
+        "summary": "TikTok Video Detail",
+        "description": "Get detailed data for a single TikTok video.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "video_id": {
+                    "type": "string",
+                    "example": "7000000000000000000"
+                  }
+                },
+                "required": [
+                  "video_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Video detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tiktok/video/comments": {
+      "post": {
+        "tags": [
+          "TikTok"
+        ],
+        "summary": "TikTok Video Comments",
+        "description": "Get comments for a TikTok video.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "video_id": {
+                    "type": "string",
+                    "example": "7000000000000000000"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "default": "0",
+                    "description": "Pagination cursor"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "default": 20,
+                    "description": "Number of results"
+                  }
+                },
+                "required": [
+                  "video_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Video comments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tiktok/video/comments/replies": {
+      "post": {
+        "tags": [
+          "TikTok"
+        ],
+        "summary": "TikTok Comment Replies",
+        "description": "Get replies to a specific comment.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "video_id": {
+                    "type": "string",
+                    "example": "7000000000000000000"
+                  },
+                  "comment_id": {
+                    "type": "string",
+                    "example": "7000000000000000000"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "default": "0",
+                    "description": "Pagination cursor"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "default": 20,
+                    "description": "Number of results"
+                  }
+                },
+                "required": [
+                  "video_id",
+                  "comment_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment replies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tiktok/search/videos": {
+      "post": {
+        "tags": [
+          "TikTok"
+        ],
+        "summary": "TikTok Search Videos",
+        "description": "Search TikTok videos by keyword with optional filters.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keyword": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "cooking recipe"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "default": "0",
+                    "description": "Pagination offset"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "default": 20,
+                    "description": "Number of results"
+                  },
+                  "sort_type": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
+                    "description": "0 = relevance, 1 = most likes"
+                  },
+                  "publish_time": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1",
+                      "7",
+                      "30",
+                      "90",
+                      "180"
+                    ],
+                    "description": "0 = all time, 1 = last day, 7 = week, 30 = month, 90 = 3 months, 180 = 6 months"
+                  }
+                },
+                "required": [
+                  "keyword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Video search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tiktok/search/users": {
+      "post": {
+        "tags": [
+          "TikTok"
+        ],
+        "summary": "TikTok Search Users",
+        "description": "Search TikTok users by keyword.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keyword": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "chef"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "default": "0",
+                    "description": "Pagination offset"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "default": 20,
+                    "description": "Number of results"
+                  }
+                },
+                "required": [
+                  "keyword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tiktok/hashtag": {
+      "post": {
+        "tags": [
+          "TikTok"
+        ],
+        "summary": "TikTok Hashtag Info",
+        "description": "Get details and stats for a TikTok hashtag.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "hashtag_name": {
+                    "type": "string",
+                    "example": "fyp"
+                  },
+                  "hashtag_id": {
+                    "type": "string",
+                    "example": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hashtag info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tiktok/hashtag/videos": {
+      "post": {
+        "tags": [
+          "TikTok"
+        ],
+        "summary": "TikTok Hashtag Videos",
+        "description": "Get videos for a specific hashtag.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "hashtag_id": {
+                    "type": "string",
+                    "example": "123456"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "default": "0",
+                    "description": "Pagination offset"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "default": 20,
+                    "description": "Number of results"
+                  }
+                },
+                "required": [
+                  "hashtag_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hashtag videos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tiktok/user/followers": {
+      "post": {
+        "tags": [
+          "TikTok"
+        ],
+        "summary": "TikTok User Followers",
+        "description": "Get a TikTok user's follower list.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sec_user_id": {
+                    "type": "string",
+                    "example": ""
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "default": 20,
+                    "description": "Number of results (max 20)"
+                  },
+                  "page_token": {
+                    "type": "string",
+                    "description": "Pagination token from previous response"
+                  },
+                  "min_time": {
+                    "type": "number",
+                    "description": "Pagination timestamp from previous response"
+                  }
+                },
+                "required": [
+                  "sec_user_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Follower list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tiktok/user/followings": {
+      "post": {
+        "tags": [
+          "TikTok"
+        ],
+        "summary": "TikTok User Followings",
+        "description": "Get a TikTok user's following list.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sec_user_id": {
+                    "type": "string",
+                    "example": ""
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "default": 20,
+                    "description": "Number of results (max 20)"
+                  },
+                  "page_token": {
+                    "type": "string",
+                    "description": "Pagination token from previous response"
+                  },
+                  "min_time": {
+                    "type": "number",
+                    "description": "Pagination timestamp from previous response"
+                  }
+                },
+                "required": [
+                  "sec_user_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Following list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/profile": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram User Profile",
+        "description": "Get an Instagram user profile by username or user_id.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "instagram"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "58208242181"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/user/posts": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram User Posts",
+        "description": "Get an Instagram user's posts (timeline media).",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "instagram"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "58208242181"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "default": 12,
+                    "description": "Items per page"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor from a previous response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/user/reels": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram User Reels",
+        "description": "Get an Instagram user's Reels.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "instagram"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "58208242181"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "default": 12,
+                    "description": "Items per page"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor from a previous response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User reels",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/user/tagged": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram User Tagged Posts",
+        "description": "Get posts an Instagram user is tagged in.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "instagram"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "58208242181"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "default": 12,
+                    "description": "Items per page"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor from a previous response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tagged posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/user/stories": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram User Stories",
+        "description": "Get an Instagram user's active stories.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "instagram"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "58208242181"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User stories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/post": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram Post Detail",
+        "description": "Get a single Instagram post by url, media_id, or shortcode.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "example": "https://www.instagram.com/p/DUajw4YkorV/"
+                  },
+                  "media_id": {
+                    "type": "string",
+                    "example": "3850699893338385742"
+                  },
+                  "shortcode": {
+                    "type": "string",
+                    "example": "DUajw4YkorV"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Post detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/post/comments": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram Post Comments",
+        "description": "Get comments for an Instagram post.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "shortcode": {
+                    "type": "string",
+                    "example": "DUajw4YkorV"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "https://www.instagram.com/p/DUajw4YkorV/"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor from a previous response"
+                  },
+                  "sort_order": {
+                    "type": "string",
+                    "enum": [
+                      "popular",
+                      "newest"
+                    ],
+                    "description": "popular (default) or newest"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Post comments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/post/comments/replies": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram Comment Replies",
+        "description": "Get replies to a specific Instagram comment.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "media_id": {
+                    "type": "string",
+                    "example": "3829530490739515971"
+                  },
+                  "comment_id": {
+                    "type": "string",
+                    "example": "18065937092249736"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor from a previous response"
+                  }
+                },
+                "required": [
+                  "media_id",
+                  "comment_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment replies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/search/users": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram Search Users",
+        "description": "Search Instagram users by keyword.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keyword": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "fashion"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Rank token from a previous response"
+                  }
+                },
+                "required": [
+                  "keyword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/search/hashtags": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram Search Hashtags",
+        "description": "Search Instagram hashtags by keyword.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keyword": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "fashion"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Rank token from a previous response"
+                  }
+                },
+                "required": [
+                  "keyword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hashtag search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/user/followers": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram User Followers",
+        "description": "Get an Instagram user's follower list.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "instagram"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "58208242181"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 12,
+                    "description": "Users per page"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor from a previous response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Follower list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instagram/user/followings": {
+      "post": {
+        "tags": [
+          "Instagram"
+        ],
+        "summary": "Instagram User Followings",
+        "description": "Get an Instagram user's following list.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "instagram"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "58208242181"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 12,
+                    "description": "Users per page"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor from a previous response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Following list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usage": {
+      "get": {
+        "tags": [
+          "Usage"
+        ],
+        "summary": "Get current usage stats",
+        "description": "Returns your current plan, usage count, and remaining searches.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "plan": {
+                      "type": "string"
+                    },
+                    "credit_balance": {
+                      "type": "number"
+                    },
+                    "purchased_credits": {
+                      "type": "number"
+                    },
+                    "searches_used": {
+                      "type": "number"
+                    },
+                    "period_start": {
+                      "type": "string"
+                    },
+                    "auto_recharge": {
+                      "type": "object",
+                      "properties": {
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "threshold": {
+                          "type": "number"
+                        },
+                        "amount": {
+                          "type": "number"
+                        },
+                        "cost": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "enabled",
+                        "threshold",
+                        "amount",
+                        "cost"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "plan",
+                    "credit_balance",
+                    "purchased_credits",
+                    "searches_used",
+                    "period_start",
+                    "auto_recharge"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

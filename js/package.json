@@ -1,0 +1,62 @@
+{
+  "name": "@scavio/composio",
+  "version": "0.1.0",
+  "description": "Scavio real-time search tools for Composio (Google, YouTube, Amazon, Walmart, Reddit, TikTok, Instagram)",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "composio",
+    "scavio",
+    "search",
+    "agents",
+    "tools",
+    "serp",
+    "google-search",
+    "tavily-alternative",
+    "serpapi-alternative"
+  ],
+  "license": "MIT",
+  "author": "Scavio <support@scavio.dev>",
+  "homepage": "https://scavio.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scavio-ai/composio-scavio"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@composio/core": "^0.13.1",
+    "scavio": "^0.2.1",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0"
+  }
+}
