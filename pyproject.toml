@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "composio-scavio"
-version = "0.1.0"
+version = "0.1.1"
 description = "Scavio real-time search tools for Composio (Google, YouTube, Amazon, Walmart, Reddit, TikTok, Instagram)"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -13,7 +13,7 @@ authors = [{ name = "Scavio", email = "scavio.dev@gmail.com" }]
 keywords = ["composio", "scavio", "search", "agents", "tools", "serp", "google"]
 dependencies = [
     "composio>=0.17.0",
-    "scavio>=0.2.1",
+    "scavio>=0.5.0",
     "pydantic>=2.0",
 ]
 

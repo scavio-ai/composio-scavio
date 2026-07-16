@@ -48,10 +48,24 @@ class GoogleSearchInput(BaseModel):
     country_code: Optional[str] = Field(None, description="Two-letter country code, e.g. 'us'.")
     language: Optional[str] = Field(None, description="Two-letter language code, e.g. 'en'.")
     page: Optional[int] = Field(None, description="Result page number (1-based).")
-    search_type: Optional[str] = Field(None, description="Search vertical, e.g. 'search', 'news', 'images'.")
     device: Optional[str] = Field(None, description="Device profile: 'desktop' or 'mobile'.")
     nfpr: Optional[bool] = Field(None, description="Disable auto-correction of the query when true.")
-    light_request: Optional[bool] = Field(None, description="Cheaper, lighter response (1 credit instead of 2) when true.")
+
+
+def _google_search_params(input: GoogleSearchInput) -> Dict[str, Any]:
+    """Map the public Google args to the v2 SERP wire params the SDK expects."""
+    params: Dict[str, Any] = {"query": input.query}
+    if input.country_code is not None:
+        params["gl"] = input.country_code
+    if input.language is not None:
+        params["hl"] = input.language
+    if input.page is not None and input.page > 1:
+        params["start"] = (input.page - 1) * 10
+    if input.device is not None:
+        params["device"] = input.device
+    if input.nfpr is not None:
+        params["nfpr"] = input.nfpr
+    return params
 
 
 # Amazon
@@ -338,8 +352,8 @@ def build_scavio_toolkit(
 
         @toolkit.tool()
         def scavio_google_search(input: GoogleSearchInput, ctx: Any = None) -> dict:
-            """Search Google for real-time web results (organic, knowledge graph, news, and more)."""
-            return _run(lambda: client.google.search(**dump(input)))
+            """Search Google for real-time web results (organic_results, ads, and the AI Overview when present). Costs 1 credit."""
+            return _run(lambda: client.google.search(**_google_search_params(input)))
 
     if all or enable_amazon:
 

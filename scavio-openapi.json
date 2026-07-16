@@ -27,13 +27,13 @@
     "parameters": {}
   },
   "paths": {
-    "/api/v1/google": {
+    "/api/v2/google": {
       "post": {
         "tags": [
           "Google"
         ],
         "summary": "Google Search",
-        "description": "Perform a Google search and get structured results.",
+        "description": "Google SERP search via the v2 engine. Supports all SERP parameters and returns the full structured response (organic_results, ads, knowledge_graph, ai_overview, and more).",
         "security": [
           {
             "Bearer": []
@@ -50,44 +50,8 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 500,
-                    "example": "pizza new york"
-                  },
-                  "country_code": {
-                    "type": "string",
-                    "minLength": 2,
-                    "maxLength": 2,
-                    "default": "us",
-                    "example": "us",
-                    "description": "ISO 3166-1 alpha-2 country code"
-                  },
-                  "language": {
-                    "type": "string",
-                    "minLength": 2,
-                    "maxLength": 5,
-                    "default": "en",
-                    "example": "en",
-                    "description": "Language code (e.g. en, fr, de)"
-                  },
-                  "page": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 100,
-                    "default": 1,
-                    "example": 1,
-                    "description": "Page number (default 1)"
-                  },
-                  "search_type": {
-                    "type": "string",
-                    "enum": [
-                      "classic",
-                      "news",
-                      "maps",
-                      "images",
-                      "lens"
-                    ],
-                    "default": "classic",
-                    "example": "classic",
-                    "description": "Type of Google search"
+                    "example": "pizza new york",
+                    "description": "Search query"
                   },
                   "device": {
                     "type": "string",
@@ -96,17 +60,93 @@
                       "mobile"
                     ],
                     "example": "desktop",
-                    "description": "Device type for search results"
+                    "description": "SERP layout device"
+                  },
+                  "start": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 990,
+                    "example": 0,
+                    "description": "Result offset: 0=page 1, 10=page 2, ..."
+                  },
+                  "hl": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 5,
+                    "example": "en",
+                    "description": "UI language (ISO 639-1)"
+                  },
+                  "gl": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "example": "us",
+                    "description": "Geo location country (ISO 3166-1 alpha-2)"
+                  },
+                  "google_domain": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64,
+                    "example": "google.com",
+                    "description": "Regional Google domain"
+                  },
+                  "location": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "example": "New York,New York,United States",
+                    "description": "Canonical location name (auto UULE)"
+                  },
+                  "uule": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "description": "Pre-encoded UULE (takes priority over location)"
+                  },
+                  "lr": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "example": "lang_en",
+                    "description": "Language restrict (lang_XX)"
+                  },
+                  "cr": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "example": "countryUS",
+                    "description": "Country restrict (countryXX)"
+                  },
+                  "safe": {
+                    "type": "string",
+                    "enum": [
+                      "active"
+                    ],
+                    "example": "active",
+                    "description": "SafeSearch: active filters adult content"
                   },
                   "nfpr": {
                     "type": "boolean",
                     "example": false,
-                    "description": "Disable autocorrection when true"
+                    "description": "Disable spelling correction when true"
                   },
-                  "light_request": {
-                    "type": "boolean",
-                    "example": false,
-                    "description": "Set to false for full results (2 credits). Omit for light mode (1 credit)."
+                  "filter": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
+                    "example": "1",
+                    "description": "0 disables similar/omitted-results filtering"
+                  },
+                  "time_period": {
+                    "type": "string",
+                    "enum": [
+                      "last_hour",
+                      "last_day",
+                      "last_week",
+                      "last_month",
+                      "last_year"
+                    ],
+                    "description": "Time-based filter"
                   }
                 },
                 "required": [
@@ -124,10 +164,25 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "query": {
-                      "type": "string"
+                    "search_parameters": {
+                      "nullable": true
                     },
-                    "results": {
+                    "search_information": {
+                      "nullable": true
+                    },
+                    "organic_results": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "top_ads": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "bottom_ads": {
                       "type": "array",
                       "items": {
                         "nullable": true
@@ -139,28 +194,7 @@
                         "nullable": true
                       }
                     },
-                    "news_results": {
-                      "type": "array",
-                      "items": {
-                        "nullable": true
-                      }
-                    },
-                    "knowledge_graph": {
-                      "nullable": true
-                    },
-                    "local_results": {
-                      "type": "array",
-                      "items": {
-                        "nullable": true
-                      }
-                    },
-                    "map_results": {
-                      "type": "array",
-                      "items": {
-                        "nullable": true
-                      }
-                    },
-                    "questions": {
+                    "related_questions": {
                       "type": "array",
                       "items": {
                         "nullable": true
@@ -172,29 +206,29 @@
                         "nullable": true
                       }
                     },
-                    "related_queries": {
-                      "type": "array",
-                      "items": {
-                        "nullable": true
-                      }
-                    },
-                    "images": {
-                      "type": "array",
-                      "items": {
-                        "nullable": true
-                      }
-                    },
-                    "meta_data": {
+                    "ai_overview": {
                       "nullable": true
                     },
-                    "page": {
-                      "type": "number"
+                    "video_results": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
                     },
-                    "country_code": {
-                      "type": "string"
+                    "discussions_and_forums": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
                     },
-                    "language": {
-                      "type": "string"
+                    "local_results": {
+                      "nullable": true
+                    },
+                    "knowledge_graph": {
+                      "nullable": true
+                    },
+                    "pagination": {
+                      "nullable": true
                     },
                     "response_time": {
                       "type": "number"
@@ -207,12 +241,6 @@
                     }
                   },
                   "required": [
-                    "query",
-                    "results",
-                    "top_stories",
-                    "page",
-                    "country_code",
-                    "language",
                     "response_time",
                     "credits_used",
                     "credits_remaining"
@@ -222,103 +250,13 @@
             }
           },
           "400": {
-            "description": "Invalid parameter combination",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
+            "description": "Invalid parameter"
           },
           "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "429": {
-            "description": "Rate or usage limit exceeded",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "limit": {
-                      "type": "number"
-                    },
-                    "used": {
-                      "type": "number"
-                    },
-                    "plan": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "502": {
-            "description": "Upstream provider error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Upstream provider unavailable",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
+            "description": "Rate or usage limit exceeded"
           }
         }
       }
