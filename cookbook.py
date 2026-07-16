@@ -41,7 +41,7 @@ def main() -> None:
 
     result = session.tools.execute(
         "SCAVIO_GOOGLE_SEARCH",
-        arguments={"query": "best structured search API for AI agents", "light_request": True},
+        arguments={"query": "best structured search API for AI agents", "country_code": "us"},
     )
     print(result)
 

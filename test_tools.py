@@ -60,15 +60,33 @@ def test_all_overrides_flags(monkeypatch):
     assert "SCAVIO_TIKTOK_PROFILE" in slugs
 
 
-def test_execution_forwards_params_and_drops_none(monkeypatch):
+def test_google_maps_public_params_to_v2(monkeypatch):
     toolkit = _build(monkeypatch, enable_google=True, enable_amazon=False, enable_walmart=False,
                      enable_youtube=False, enable_reddit=False, enable_tiktok=False, enable_instagram=False)
     tool = next(t for t in toolkit.tools if t.slug == "SCAVIO_GOOGLE_SEARCH")
-    out = tool.execute(tool.input_params(query="ai agents", light_request=True), None)
+    out = tool.execute(
+        tool.input_params(query="ai agents", country_code="us", language="en", page=2, device="mobile", nfpr=True),
+        None,
+    )
     assert out["ok"] is True
     assert out["method"] == "search"
-    # None-valued optional fields must not be forwarded to the SDK
-    assert out["kwargs"] == {"query": "ai agents", "light_request": True}
+    # Public v1-style args are mapped to v2 wire params; page -> start offset; None dropped.
+    assert out["kwargs"] == {
+        "query": "ai agents",
+        "gl": "us",
+        "hl": "en",
+        "start": 10,
+        "device": "mobile",
+        "nfpr": True,
+    }
+
+
+def test_google_page_one_sends_no_start(monkeypatch):
+    toolkit = _build(monkeypatch, enable_google=True, enable_amazon=False, enable_walmart=False,
+                     enable_youtube=False, enable_reddit=False, enable_tiktok=False, enable_instagram=False)
+    tool = next(t for t in toolkit.tools if t.slug == "SCAVIO_GOOGLE_SEARCH")
+    out = tool.execute(tool.input_params(query="ai agents", page=1), None)
+    assert out["kwargs"] == {"query": "ai agents"}
 
 
 def test_amazon_product_uses_asin(monkeypatch):
