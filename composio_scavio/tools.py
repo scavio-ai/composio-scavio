@@ -122,18 +122,90 @@ class WalmartProductInput(BaseModel):
 # YouTube
 class YouTubeSearchInput(BaseModel):
     query: str = Field(description="The video search query.")
-    upload_date: Optional[str] = Field(None, description="Upload date filter, e.g. 'today', 'week', 'month'.")
-    type: Optional[str] = Field(None, description="Result type, e.g. 'video', 'channel', 'playlist'.")
-    duration: Optional[str] = Field(None, description="Duration filter, e.g. 'short', 'long'.")
-    sort_by: Optional[str] = Field(None, description="Sort order for results.")
+    upload_date: Optional[str] = Field(None, description="Upload date filter: 'last_hour', 'today', 'this_week', 'this_month', 'this_year'.")
+    type: Optional[str] = Field(None, description="Result type: 'video', 'channel', 'playlist', or 'movie'.")
+    duration: Optional[str] = Field(None, description="Duration filter: 'short', 'medium', or 'long'.")
+    sort_by: Optional[str] = Field(None, description="Sort order: 'relevance', 'date', 'view_count', or 'rating'.")
+    features: Optional[list] = Field(None, description="Feature filters, e.g. ['hd', '4k', 'subtitles', 'creative_commons', 'live', '360', '3d', 'hdr', 'vr180'].")
+    cursor: Optional[str] = Field(None, description="Pagination cursor from a prior response.")
     hd: Optional[bool] = Field(None, description="Restrict to HD videos when true.")
     subtitles: Optional[bool] = Field(None, description="Restrict to videos with subtitles when true.")
     creative_commons: Optional[bool] = Field(None, description="Restrict to Creative Commons videos when true.")
     live: Optional[bool] = Field(None, description="Restrict to live videos when true.")
 
 
+class YouTubeShortsInput(BaseModel):
+    query: str = Field(description="The Shorts search query.")
+    sort_by: Optional[str] = Field(None, description="Sort order: 'relevance', 'date', 'view_count', or 'rating'.")
+    cursor: Optional[str] = Field(None, description="Pagination cursor from a prior response.")
+
+
+class YouTubeSuggestionsInput(BaseModel):
+    query: str = Field(description="The partial query to autocomplete.")
+    language: Optional[str] = Field(None, description="Suggestion language (ISO 639-1, default 'en').")
+    region: Optional[str] = Field(None, description="Region code (ISO 3166-1 alpha-2, default 'US').")
+
+
+class YouTubeVideoInput(BaseModel):
+    video_id: str = Field(description="YouTube video id or a full watch URL.")
+
+
 class YouTubeMetadataInput(BaseModel):
-    video_id: str = Field(description="YouTube video id.")
+    video_id: str = Field(description="YouTube video id or a full watch URL.")
+
+
+class YouTubeCommentsInput(BaseModel):
+    video_id: str = Field(description="YouTube video id or a full watch URL.")
+    cursor: Optional[str] = Field(None, description="Pagination cursor from a prior response.")
+
+
+class YouTubeCommentRepliesInput(BaseModel):
+    video_id: str = Field(description="YouTube video id or a full watch URL.")
+    reply_cursor: str = Field(description="Reply cursor from a parent comment's 'reply_cursor' field.")
+    cursor: Optional[str] = Field(None, description="Pagination cursor from a prior response.")
+
+
+class YouTubeTranscriptInput(BaseModel):
+    video_id: str = Field(description="YouTube video id or a full watch URL.")
+    language: Optional[str] = Field(None, description="Caption language code (default 'en').")
+    format: Optional[str] = Field(None, description="'text' for a plain transcript or 'srt' for timed subtitles (default 'text').")
+
+
+class YouTubeRelatedInput(BaseModel):
+    video_id: str = Field(description="YouTube video id or a full watch URL.")
+    cursor: Optional[str] = Field(None, description="Pagination cursor from a prior response.")
+
+
+class YouTubeChannelSearchInput(BaseModel):
+    query: str = Field(description="The channel search query.")
+    cursor: Optional[str] = Field(None, description="Pagination cursor from a prior response.")
+
+
+class YouTubeChannelInput(BaseModel):
+    channel_id: str = Field(description="YouTube channel id, @handle, or channel URL.")
+
+
+class YouTubeChannelVideosInput(BaseModel):
+    channel_id: str = Field(description="YouTube channel id.")
+    cursor: Optional[str] = Field(None, description="Pagination cursor from a prior response.")
+
+
+class YouTubeChannelShortsInput(BaseModel):
+    channel_id: str = Field(description="YouTube channel id.")
+    cursor: Optional[str] = Field(None, description="Pagination cursor from a prior response.")
+
+
+class YouTubeChannelCommunityInput(BaseModel):
+    channel_id: str = Field(description="YouTube channel id.")
+    cursor: Optional[str] = Field(None, description="Pagination cursor from a prior response.")
+
+
+class YouTubeChannelResolveInput(BaseModel):
+    channel: str = Field(description="A channel @handle or channel URL to resolve to a channel id.")
+
+
+class YouTubeStreamsInput(BaseModel):
+    video_id: str = Field(description="YouTube video id or a full watch URL.")
 
 
 # Reddit
@@ -323,7 +395,8 @@ def build_scavio_toolkit(
         enable_google: Register the Google web search tool. Defaults to True.
         enable_amazon: Register the Amazon search and product tools. Defaults to True.
         enable_walmart: Register the Walmart search and product tools. Defaults to True.
-        enable_youtube: Register the YouTube search and metadata tools. Defaults to True.
+        enable_youtube: Register the YouTube tools (search, shorts, suggestions, video,
+            comments, transcript, related, channel, streams, and more). Defaults to True.
         enable_reddit: Register the Reddit search and post tools. Defaults to True.
         enable_tiktok: Register the TikTok tools. Defaults to True.
         enable_instagram: Register the Instagram tools. Defaults to True.
@@ -383,13 +456,83 @@ def build_scavio_toolkit(
 
         @toolkit.tool()
         def scavio_youtube_search(input: YouTubeSearchInput, ctx: Any = None) -> dict:
-            """Search YouTube for videos, channels, or playlists."""
+            """Search YouTube for videos, channels, or playlists. Costs 2 credits."""
             return _run(lambda: client.youtube.search(**dump(input)))
 
         @toolkit.tool()
+        def scavio_youtube_shorts(input: YouTubeShortsInput, ctx: Any = None) -> dict:
+            """Search YouTube Shorts. Costs 2 credits."""
+            return _run(lambda: client.youtube.shorts(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_suggestions(input: YouTubeSuggestionsInput, ctx: Any = None) -> dict:
+            """Get YouTube search autocomplete suggestions for a partial query. Costs 1 credit."""
+            return _run(lambda: client.youtube.suggestions(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_video(input: YouTubeVideoInput, ctx: Any = None) -> dict:
+            """Fetch full metadata for a YouTube video by id or watch URL. Costs 1 credit."""
+            return _run(lambda: client.youtube.video(**dump(input)))
+
+        @toolkit.tool()
         def scavio_youtube_metadata(input: YouTubeMetadataInput, ctx: Any = None) -> dict:
-            """Fetch metadata for a YouTube video by id."""
+            """Fetch metadata for a YouTube video by id. Deprecated alias of scavio_youtube_video."""
             return _run(lambda: client.youtube.metadata(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_comments(input: YouTubeCommentsInput, ctx: Any = None) -> dict:
+            """List top-level comments on a YouTube video. Costs 1 credit."""
+            return _run(lambda: client.youtube.comments(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_comment_replies(input: YouTubeCommentRepliesInput, ctx: Any = None) -> dict:
+            """List replies to a YouTube comment using its reply cursor. Costs 1 credit."""
+            return _run(lambda: client.youtube.comment_replies(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_transcript(input: YouTubeTranscriptInput, ctx: Any = None) -> dict:
+            """Fetch the transcript or timed captions for a YouTube video. Costs 8 credits."""
+            return _run(lambda: client.youtube.transcript(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_related(input: YouTubeRelatedInput, ctx: Any = None) -> dict:
+            """List videos related to a YouTube video. Costs 1 credit."""
+            return _run(lambda: client.youtube.related(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_channel_search(input: YouTubeChannelSearchInput, ctx: Any = None) -> dict:
+            """Search YouTube channels by keyword. Costs 1 credit."""
+            return _run(lambda: client.youtube.channel_search(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_channel(input: YouTubeChannelInput, ctx: Any = None) -> dict:
+            """Fetch YouTube channel details by id, @handle, or URL. Costs 1 credit."""
+            return _run(lambda: client.youtube.channel(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_channel_videos(input: YouTubeChannelVideosInput, ctx: Any = None) -> dict:
+            """List videos uploaded by a YouTube channel. Costs 1 credit."""
+            return _run(lambda: client.youtube.channel_videos(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_channel_shorts(input: YouTubeChannelShortsInput, ctx: Any = None) -> dict:
+            """List Shorts posted by a YouTube channel. Costs 1 credit."""
+            return _run(lambda: client.youtube.channel_shorts(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_channel_community(input: YouTubeChannelCommunityInput, ctx: Any = None) -> dict:
+            """List community posts from a YouTube channel. Costs 1 credit."""
+            return _run(lambda: client.youtube.channel_community(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_channel_resolve(input: YouTubeChannelResolveInput, ctx: Any = None) -> dict:
+            """Resolve a YouTube @handle or channel URL to a channel id. Costs 1 credit."""
+            return _run(lambda: client.youtube.channel_resolve(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_youtube_streams(input: YouTubeStreamsInput, ctx: Any = None) -> dict:
+            """Fetch playable or downloadable stream formats for a YouTube video. Costs 3 credits."""
+            return _run(lambda: client.youtube.streams(**dump(input)))
 
     if all or enable_reddit:
 
