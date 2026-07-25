@@ -33,7 +33,7 @@ def _build(monkeypatch, **kwargs):
 def test_all_tools_register(monkeypatch):
     toolkit = _build(monkeypatch, all=True)
     slugs = [t.slug for t in toolkit.tools]
-    assert len(slugs) == 32, slugs
+    assert len(slugs) == 46, slugs
     assert len(set(slugs)) == len(slugs), "slugs must be unique"
     assert all(s.startswith("SCAVIO_") for s in slugs)
 
@@ -96,6 +96,38 @@ def test_amazon_product_uses_asin(monkeypatch):
     out = tool.execute(tool.input_params(asin="B000000000"), None)
     assert out["method"] == "product"
     assert out["kwargs"] == {"asin": "B000000000"}
+
+
+def test_youtube_tools_register(monkeypatch):
+    toolkit = _build(monkeypatch, enable_google=False, enable_amazon=False, enable_walmart=False,
+                     enable_youtube=True, enable_reddit=False, enable_tiktok=False, enable_instagram=False)
+    slugs = {t.slug for t in toolkit.tools}
+    assert slugs == {
+        "SCAVIO_YOUTUBE_SEARCH", "SCAVIO_YOUTUBE_SHORTS", "SCAVIO_YOUTUBE_SUGGESTIONS",
+        "SCAVIO_YOUTUBE_VIDEO", "SCAVIO_YOUTUBE_METADATA", "SCAVIO_YOUTUBE_COMMENTS",
+        "SCAVIO_YOUTUBE_COMMENT_REPLIES", "SCAVIO_YOUTUBE_TRANSCRIPT", "SCAVIO_YOUTUBE_RELATED",
+        "SCAVIO_YOUTUBE_CHANNEL_SEARCH", "SCAVIO_YOUTUBE_CHANNEL", "SCAVIO_YOUTUBE_CHANNEL_VIDEOS",
+        "SCAVIO_YOUTUBE_CHANNEL_SHORTS", "SCAVIO_YOUTUBE_CHANNEL_COMMUNITY",
+        "SCAVIO_YOUTUBE_CHANNEL_RESOLVE", "SCAVIO_YOUTUBE_STREAMS",
+    }
+
+
+def test_youtube_metadata_is_alias_of_video(monkeypatch):
+    toolkit = _build(monkeypatch, enable_google=False, enable_amazon=False, enable_walmart=False,
+                     enable_youtube=True, enable_reddit=False, enable_tiktok=False, enable_instagram=False)
+    tool = next(t for t in toolkit.tools if t.slug == "SCAVIO_YOUTUBE_METADATA")
+    out = tool.execute(tool.input_params(video_id="dQw4w9WgXcQ"), None)
+    assert out["method"] == "metadata"
+    assert out["kwargs"] == {"video_id": "dQw4w9WgXcQ"}
+
+
+def test_youtube_comment_replies_passes_reply_cursor(monkeypatch):
+    toolkit = _build(monkeypatch, enable_google=False, enable_amazon=False, enable_walmart=False,
+                     enable_youtube=True, enable_reddit=False, enable_tiktok=False, enable_instagram=False)
+    tool = next(t for t in toolkit.tools if t.slug == "SCAVIO_YOUTUBE_COMMENT_REPLIES")
+    out = tool.execute(tool.input_params(video_id="vid", reply_cursor="rc"), None)
+    assert out["method"] == "comment_replies"
+    assert out["kwargs"] == {"video_id": "vid", "reply_cursor": "rc"}
 
 
 def test_error_is_returned_as_dict(monkeypatch):

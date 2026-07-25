@@ -27,13 +27,13 @@
     "parameters": {}
   },
   "paths": {
-    "/api/v2/google": {
+    "/api/v1/google": {
       "post": {
         "tags": [
           "Google"
         ],
-        "summary": "Google Search",
-        "description": "Google SERP search via the v2 engine. Supports all SERP parameters and returns the full structured response (organic_results, ads, knowledge_graph, ai_overview, and more).",
+        "summary": "Google Search (deprecated)",
+        "description": "DEPRECATED. Retires 2026-08-04; use POST /api/v2/google (richer results, 1 credit). See https://scavio.dev/docs/google-v1-to-v2-migration.",
         "security": [
           {
             "Bearer": []
@@ -50,8 +50,44 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 500,
-                    "example": "pizza new york",
-                    "description": "Search query"
+                    "example": "pizza new york"
+                  },
+                  "country_code": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "default": "us",
+                    "example": "us",
+                    "description": "ISO 3166-1 alpha-2 country code"
+                  },
+                  "language": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 5,
+                    "default": "en",
+                    "example": "en",
+                    "description": "Language code (e.g. en, fr, de)"
+                  },
+                  "page": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 1,
+                    "example": 1,
+                    "description": "Page number (default 1)"
+                  },
+                  "search_type": {
+                    "type": "string",
+                    "enum": [
+                      "classic",
+                      "news",
+                      "maps",
+                      "images",
+                      "lens"
+                    ],
+                    "default": "classic",
+                    "example": "classic",
+                    "description": "Type of Google search"
                   },
                   "device": {
                     "type": "string",
@@ -60,93 +96,17 @@
                       "mobile"
                     ],
                     "example": "desktop",
-                    "description": "SERP layout device"
-                  },
-                  "start": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 990,
-                    "example": 0,
-                    "description": "Result offset: 0=page 1, 10=page 2, ..."
-                  },
-                  "hl": {
-                    "type": "string",
-                    "minLength": 2,
-                    "maxLength": 5,
-                    "example": "en",
-                    "description": "UI language (ISO 639-1)"
-                  },
-                  "gl": {
-                    "type": "string",
-                    "minLength": 2,
-                    "maxLength": 2,
-                    "example": "us",
-                    "description": "Geo location country (ISO 3166-1 alpha-2)"
-                  },
-                  "google_domain": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 64,
-                    "example": "google.com",
-                    "description": "Regional Google domain"
-                  },
-                  "location": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 200,
-                    "example": "New York,New York,United States",
-                    "description": "Canonical location name (auto UULE)"
-                  },
-                  "uule": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 500,
-                    "description": "Pre-encoded UULE (takes priority over location)"
-                  },
-                  "lr": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "example": "lang_en",
-                    "description": "Language restrict (lang_XX)"
-                  },
-                  "cr": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "example": "countryUS",
-                    "description": "Country restrict (countryXX)"
-                  },
-                  "safe": {
-                    "type": "string",
-                    "enum": [
-                      "active"
-                    ],
-                    "example": "active",
-                    "description": "SafeSearch: active filters adult content"
+                    "description": "Device type for search results"
                   },
                   "nfpr": {
                     "type": "boolean",
                     "example": false,
-                    "description": "Disable spelling correction when true"
+                    "description": "Disable autocorrection when true"
                   },
-                  "filter": {
-                    "type": "string",
-                    "enum": [
-                      "0",
-                      "1"
-                    ],
-                    "example": "1",
-                    "description": "0 disables similar/omitted-results filtering"
-                  },
-                  "time_period": {
-                    "type": "string",
-                    "enum": [
-                      "last_hour",
-                      "last_day",
-                      "last_week",
-                      "last_month",
-                      "last_year"
-                    ],
-                    "description": "Time-based filter"
+                  "light_request": {
+                    "type": "boolean",
+                    "example": false,
+                    "description": "Set to false for full results (2 credits). Omit for light mode (1 credit)."
                   }
                 },
                 "required": [
@@ -164,25 +124,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "search_parameters": {
-                      "nullable": true
+                    "query": {
+                      "type": "string"
                     },
-                    "search_information": {
-                      "nullable": true
-                    },
-                    "organic_results": {
-                      "type": "array",
-                      "items": {
-                        "nullable": true
-                      }
-                    },
-                    "top_ads": {
-                      "type": "array",
-                      "items": {
-                        "nullable": true
-                      }
-                    },
-                    "bottom_ads": {
+                    "results": {
                       "type": "array",
                       "items": {
                         "nullable": true
@@ -194,7 +139,28 @@
                         "nullable": true
                       }
                     },
-                    "related_questions": {
+                    "news_results": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "knowledge_graph": {
+                      "nullable": true
+                    },
+                    "local_results": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "map_results": {
+                      "type": "array",
+                      "items": {
+                        "nullable": true
+                      }
+                    },
+                    "questions": {
                       "type": "array",
                       "items": {
                         "nullable": true
@@ -206,29 +172,29 @@
                         "nullable": true
                       }
                     },
-                    "ai_overview": {
-                      "nullable": true
-                    },
-                    "video_results": {
+                    "related_queries": {
                       "type": "array",
                       "items": {
                         "nullable": true
                       }
                     },
-                    "discussions_and_forums": {
+                    "images": {
                       "type": "array",
                       "items": {
                         "nullable": true
                       }
                     },
-                    "local_results": {
+                    "meta_data": {
                       "nullable": true
                     },
-                    "knowledge_graph": {
-                      "nullable": true
+                    "page": {
+                      "type": "number"
                     },
-                    "pagination": {
-                      "nullable": true
+                    "country_code": {
+                      "type": "string"
+                    },
+                    "language": {
+                      "type": "string"
                     },
                     "response_time": {
                       "type": "number"
@@ -241,6 +207,12 @@
                     }
                   },
                   "required": [
+                    "query",
+                    "results",
+                    "top_stories",
+                    "page",
+                    "country_code",
+                    "language",
                     "response_time",
                     "credits_used",
                     "credits_remaining"
@@ -250,154 +222,18 @@
             }
           },
           "400": {
-            "description": "Invalid parameter"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "429": {
-            "description": "Rate or usage limit exceeded"
-          }
-        }
-      }
-    },
-    "/api/v1/youtube/search": {
-      "post": {
-        "tags": [
-          "YouTube"
-        ],
-        "summary": "YouTube Search",
-        "description": "Search YouTube and get structured results.",
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "360": {
-                    "type": "boolean",
-                    "description": "360-degree videos only"
-                  },
-                  "search": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 500,
-                    "example": "javascript tutorial"
-                  },
-                  "upload_date": {
-                    "type": "string",
-                    "enum": [
-                      "last_hour",
-                      "today",
-                      "this_week",
-                      "this_month",
-                      "this_year"
-                    ],
-                    "description": "Filter by upload date"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "video",
-                      "channel",
-                      "playlist"
-                    ],
-                    "description": "Filter by result type"
-                  },
-                  "duration": {
-                    "type": "string",
-                    "enum": [
-                      "short",
-                      "medium",
-                      "long"
-                    ],
-                    "description": "Filter by video duration"
-                  },
-                  "sort_by": {
-                    "type": "string",
-                    "enum": [
-                      "relevance",
-                      "date",
-                      "view_count",
-                      "rating"
-                    ],
-                    "description": "Sort order for results"
-                  },
-                  "hd": {
-                    "type": "boolean",
-                    "description": "HD videos only"
-                  },
-                  "4k": {
-                    "type": "boolean",
-                    "description": "4K videos only"
-                  },
-                  "subtitles": {
-                    "type": "boolean",
-                    "description": "Videos with subtitles only"
-                  },
-                  "creative_commons": {
-                    "type": "boolean",
-                    "description": "Creative Commons license only"
-                  },
-                  "live": {
-                    "type": "boolean",
-                    "description": "Live videos only"
-                  },
-                  "3d": {
-                    "type": "boolean",
-                    "description": "3D videos only"
-                  },
-                  "hdr": {
-                    "type": "boolean",
-                    "description": "HDR videos only"
-                  },
-                  "location": {
-                    "type": "boolean",
-                    "description": "Videos with location only"
-                  },
-                  "vr180": {
-                    "type": "boolean",
-                    "description": "VR180 videos only"
-                  }
-                },
-                "required": [
-                  "search"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Search results",
+            "description": "Invalid parameter combination",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "data": {
-                      "nullable": true
-                    },
-                    "response_time": {
-                      "type": "number"
-                    },
-                    "credits_used": {
-                      "type": "number"
-                    },
-                    "credits_remaining": {
-                      "type": "number"
+                    "error": {
+                      "type": "string"
                     }
                   },
                   "required": [
-                    "response_time",
-                    "credits_used",
-                    "credits_remaining"
+                    "error"
                   ]
                 }
               }
@@ -487,13 +323,2088 @@
         }
       }
     },
+    "/api/v1/youtube/search": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Search",
+        "description": "Search YouTube videos, channels, and playlists.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "360": {
+                    "type": "boolean"
+                  },
+                  "search": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "python tutorial"
+                  },
+                  "upload_date": {
+                    "type": "string",
+                    "enum": [
+                      "last_hour",
+                      "today",
+                      "this_week",
+                      "this_month",
+                      "this_year"
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "video",
+                      "channel",
+                      "playlist",
+                      "movie"
+                    ]
+                  },
+                  "duration": {
+                    "type": "string",
+                    "enum": [
+                      "short",
+                      "medium",
+                      "long"
+                    ]
+                  },
+                  "sort_by": {
+                    "type": "string",
+                    "enum": [
+                      "relevance",
+                      "date",
+                      "view_count",
+                      "rating"
+                    ]
+                  },
+                  "features": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "360",
+                        "hd",
+                        "4k",
+                        "subtitles",
+                        "creative_commons",
+                        "live",
+                        "3d",
+                        "hdr",
+                        "vr180"
+                      ]
+                    },
+                    "description": "Feature filters"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Pagination cursor from a previous response"
+                  },
+                  "hd": {
+                    "type": "boolean"
+                  },
+                  "4k": {
+                    "type": "boolean"
+                  },
+                  "subtitles": {
+                    "type": "boolean"
+                  },
+                  "creative_commons": {
+                    "type": "boolean"
+                  },
+                  "live": {
+                    "type": "boolean"
+                  },
+                  "3d": {
+                    "type": "boolean"
+                  },
+                  "hdr": {
+                    "type": "boolean"
+                  },
+                  "vr180": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "search"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Search",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/shorts": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Shorts Search",
+        "description": "Search YouTube Shorts.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "search": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "funny cats"
+                  },
+                  "sort_by": {
+                    "type": "string",
+                    "enum": [
+                      "relevance",
+                      "date",
+                      "view_count",
+                      "rating"
+                    ]
+                  },
+                  "cursor": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "search"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Shorts Search",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/suggestions": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Search Suggestions",
+        "description": "Autocomplete suggestions for a query.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "search": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "python"
+                  },
+                  "language": {
+                    "type": "string",
+                    "example": "en"
+                  },
+                  "region": {
+                    "type": "string",
+                    "example": "US"
+                  }
+                },
+                "required": [
+                  "search"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Search Suggestions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/video": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Video Details",
+        "description": "Full details for a single video.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "video_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "dQw4w9WgXcQ",
+                    "description": "Video id or watch URL"
+                  }
+                },
+                "required": [
+                  "video_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Video Details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/youtube/metadata": {
       "post": {
         "tags": [
           "YouTube"
         ],
-        "summary": "YouTube Video Metadata",
-        "description": "Get metadata for a YouTube video.",
+        "summary": "YouTube Video Metadata (deprecated)",
+        "description": "Deprecated alias of /api/v1/youtube/video.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "video_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "dQw4w9WgXcQ",
+                    "description": "Video id or watch URL"
+                  }
+                },
+                "required": [
+                  "video_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Video Metadata (deprecated)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/comments": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Video Comments",
+        "description": "Top-level comments for a video.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "video_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "dQw4w9WgXcQ"
+                  },
+                  "cursor": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "video_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Video Comments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/comments/replies": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Comment Replies",
+        "description": "Replies to a specific comment.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "video_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "dQw4w9WgXcQ"
+                  },
+                  "reply_cursor": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "reply_cursor from a comment in the comments endpoint"
+                  },
+                  "cursor": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "video_id",
+                  "reply_cursor"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Comment Replies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/transcript": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Transcript",
+        "description": "Transcript/captions for a video (plain text or timed srt).",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "video_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "dQw4w9WgXcQ"
+                  },
+                  "language": {
+                    "type": "string",
+                    "example": "en"
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "text",
+                      "srt"
+                    ],
+                    "description": "text (plain) or srt (timed)"
+                  }
+                },
+                "required": [
+                  "video_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Transcript",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/related": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Related Videos",
+        "description": "Videos related to a given video.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "video_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "dQw4w9WgXcQ"
+                  },
+                  "cursor": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "video_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Related Videos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/channel/search": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Channel Search",
+        "description": "Search for channels.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "search": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "example": "mrbeast"
+                  },
+                  "cursor": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "search"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Channel Search",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/channel": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Channel Details",
+        "description": "Channel profile and about info.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "channel_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "UCX6OQ3DkcsbYNE6H8uQQuVA",
+                    "description": "Channel id, @handle, or URL"
+                  }
+                },
+                "required": [
+                  "channel_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Channel Details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/channel/videos": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Channel Videos",
+        "description": "A channel's uploaded videos.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "channel_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "UCX6OQ3DkcsbYNE6H8uQQuVA",
+                    "description": "Channel id, @handle, or URL"
+                  },
+                  "cursor": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "channel_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Channel Videos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/channel/shorts": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Channel Shorts",
+        "description": "A channel's Shorts.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "channel_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "UCX6OQ3DkcsbYNE6H8uQQuVA",
+                    "description": "Channel id, @handle, or URL"
+                  },
+                  "cursor": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "channel_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Channel Shorts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/channel/community": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Channel Community",
+        "description": "A channel's community posts.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "channel_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "UCX6OQ3DkcsbYNE6H8uQQuVA",
+                    "description": "Channel id, @handle, or URL"
+                  },
+                  "cursor": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "channel_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Channel Community",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/channel/resolve": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Channel Resolve",
+        "description": "Resolve a channel @handle or URL to its id.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "channel": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "@MrBeast",
+                    "description": "A channel @handle or URL to resolve to an id"
+                  }
+                },
+                "required": [
+                  "channel"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "YouTube Channel Resolve",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "nullable": true
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "response_time",
+                    "credits_used",
+                    "credits_remaining"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream provider error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/youtube/streams": {
+      "post": {
+        "tags": [
+          "YouTube"
+        ],
+        "summary": "YouTube Video Streams",
+        "description": "Direct playable/downloadable stream URLs for a video.",
         "security": [
           {
             "Bearer": []
@@ -521,7 +2432,7 @@
         },
         "responses": {
           "200": {
-            "description": "Video metadata",
+            "description": "YouTube Video Streams",
             "content": {
               "application/json": {
                 "schema": {
@@ -596,24 +2507,6 @@
           },
           "502": {
             "description": "Upstream provider error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Upstream provider unavailable",
             "content": {
               "application/json": {
                 "schema": {
