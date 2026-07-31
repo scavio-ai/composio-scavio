@@ -69,31 +69,32 @@ def _google_search_params(input: GoogleSearchInput) -> Dict[str, Any]:
 
 
 # Amazon
+# The Amazon API moved upstream in 2026-07: sort_by, pages, category_id,
+# merchant_id, language, currency, device, zip_code and autoselect_variant no
+# longer exist. Removed rather than kept as no-ops (sort_by was verified to
+# return the identical unordered set for every value). `domain` still works on
+# the wire as a deprecated alias but is not offered - one spelling per param.
+_COUNTRY_DESC = (
+    "Marketplace country code (ISO 3166-1 alpha-2), not a domain: 'us' (default), 'gb' (the UK is gb, not uk), 'ca', 'de', 'fr', 'es', 'it', 'jp', 'in', 'au', 'br', 'mx', 'nl', 'pl', 'se', 'sg', 'ae', 'sa', 'eg', 'cn', 'be', 'tr'. An unknown code falls back to us."
+)
+
+
 class AmazonSearchInput(BaseModel):
     query: str = Field(description="The product search query.")
-    domain: Optional[str] = Field(None, description="Amazon domain, e.g. 'amazon.com'.")
-    country: Optional[str] = Field(None, description="Two-letter country code.")
-    language: Optional[str] = Field(None, description="Two-letter language code.")
-    currency: Optional[str] = Field(None, description="Currency code, e.g. 'USD'.")
-    device: Optional[str] = Field(None, description="Device profile: 'desktop' or 'mobile'.")
-    sort_by: Optional[str] = Field(None, description="Sort order for results.")
-    start_page: Optional[int] = Field(None, description="First page to return.")
-    pages: Optional[int] = Field(None, description="Number of pages to return.")
-    category_id: Optional[str] = Field(None, description="Restrict to an Amazon category id.")
-    merchant_id: Optional[str] = Field(None, description="Restrict to a merchant id.")
-    zip_code: Optional[str] = Field(None, description="Delivery ZIP/postal code.")
-    autoselect_variant: Optional[bool] = Field(None, description="Auto-select the best product variant when true.")
+    country: Optional[str] = Field(None, description=_COUNTRY_DESC)
+    page: Optional[int] = Field(
+        None, description="Result page, 1-based. One page per call, 1 credit each."
+    )
 
 
 class AmazonProductInput(BaseModel):
     asin: str = Field(description="Amazon Standard Identification Number (ASIN) of the product.")
-    domain: Optional[str] = Field(None, description="Amazon domain, e.g. 'amazon.com'.")
-    country: Optional[str] = Field(None, description="Two-letter country code.")
-    language: Optional[str] = Field(None, description="Two-letter language code.")
-    currency: Optional[str] = Field(None, description="Currency code, e.g. 'USD'.")
-    device: Optional[str] = Field(None, description="Device profile: 'desktop' or 'mobile'.")
-    zip_code: Optional[str] = Field(None, description="Delivery ZIP/postal code.")
-    autoselect_variant: Optional[bool] = Field(None, description="Auto-select the best product variant when true.")
+    country: Optional[str] = Field(None, description=_COUNTRY_DESC)
+
+
+class AmazonOffersInput(BaseModel):
+    asin: str = Field(description="Amazon Standard Identification Number (ASIN) of the product.")
+    country: Optional[str] = Field(None, description=_COUNTRY_DESC)
 
 
 # Walmart
@@ -393,7 +394,7 @@ def build_scavio_toolkit(
     Args:
         api_key: Scavio API key. Falls back to the ``SCAVIO_API_KEY`` env var.
         enable_google: Register the Google web search tool. Defaults to True.
-        enable_amazon: Register the Amazon search and product tools. Defaults to True.
+        enable_amazon: Register the Amazon search, product and offers tools. Defaults to True.
         enable_walmart: Register the Walmart search and product tools. Defaults to True.
         enable_youtube: Register the YouTube tools (search, shorts, suggestions, video,
             comments, transcript, related, channel, streams, and more). Defaults to True.
@@ -432,13 +433,18 @@ def build_scavio_toolkit(
 
         @toolkit.tool()
         def scavio_amazon_search(input: AmazonSearchInput, ctx: Any = None) -> dict:
-            """Search Amazon for products matching a query."""
+            """Search Amazon for products matching a query. Results are unsorted and cannot be filtered."""
             return _run(lambda: client.amazon.search(**dump(input)))
 
         @toolkit.tool()
         def scavio_amazon_product(input: AmazonProductInput, ctx: Any = None) -> dict:
-            """Fetch full Amazon product details by ASIN."""
+            """Fetch full Amazon product details by ASIN. price is the buy-box price only."""
             return _run(lambda: client.amazon.product(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_amazon_offers(input: AmazonOffersInput, ctx: Any = None) -> dict:
+            """List every seller offer for an Amazon ASIN: price, seller, condition, shipping, buy box. Page 1 only."""
+            return _run(lambda: client.amazon.offers(**dump(input)))
 
     if all or enable_walmart:
 

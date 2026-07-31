@@ -4,6 +4,14 @@
 
 Scavio is a single Search API over Google, YouTube, Amazon, Walmart, Reddit, TikTok, and Instagram. This package exposes those endpoints as a Composio custom toolkit so your agents can pull structured, up-to-date results across any Composio-supported framework (OpenAI, Anthropic, LangChain, CrewAI, and more).
 
+> **Amazon changed (breaking).** The upstream provider moved in 2026-07:
+> `domain` is replaced by `country`, a two-letter marketplace code (`us`, `gb`
+> -- the UK is `gb`, not `uk` -- `de`, `jp`, ...), and `sort_by`, `pages`,
+> `category_id`, `merchant_id`, `language`, `currency`, `device`, `zip_code`
+> and `autoselect_variant` are gone. The marketplace ignores all of them
+> (`sort_by` returns the identical unordered set for every value), so they are
+> removed rather than kept as silent no-ops. Rank and filter results yourself.
+
 ## Install
 
 ```bash
@@ -56,7 +64,7 @@ All tools are namespaced under the `SCAVIO` toolkit. Each provider is gated by a
 | Provider | Tools |
 |----------|-------|
 | Google | `SCAVIO_GOOGLE_SEARCH` |
-| Amazon | `SCAVIO_AMAZON_SEARCH`, `SCAVIO_AMAZON_PRODUCT` |
+| Amazon | `SCAVIO_AMAZON_SEARCH`, `SCAVIO_AMAZON_PRODUCT`, `SCAVIO_AMAZON_OFFERS` |
 | Walmart | `SCAVIO_WALMART_SEARCH`, `SCAVIO_WALMART_PRODUCT` |
 | YouTube | `SCAVIO_YOUTUBE_SEARCH`, `SCAVIO_YOUTUBE_SHORTS`, `SCAVIO_YOUTUBE_SUGGESTIONS`, `SCAVIO_YOUTUBE_VIDEO`, `SCAVIO_YOUTUBE_METADATA`, `SCAVIO_YOUTUBE_COMMENTS`, `SCAVIO_YOUTUBE_COMMENT_REPLIES`, `SCAVIO_YOUTUBE_TRANSCRIPT`, `SCAVIO_YOUTUBE_RELATED`, `SCAVIO_YOUTUBE_CHANNEL_SEARCH`, `SCAVIO_YOUTUBE_CHANNEL`, `SCAVIO_YOUTUBE_CHANNEL_VIDEOS`, `SCAVIO_YOUTUBE_CHANNEL_SHORTS`, `SCAVIO_YOUTUBE_CHANNEL_COMMUNITY`, `SCAVIO_YOUTUBE_CHANNEL_RESOLVE`, `SCAVIO_YOUTUBE_STREAMS` |
 | Reddit | `SCAVIO_REDDIT_SEARCH`, `SCAVIO_REDDIT_POST` |

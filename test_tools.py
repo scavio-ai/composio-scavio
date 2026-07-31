@@ -33,7 +33,7 @@ def _build(monkeypatch, **kwargs):
 def test_all_tools_register(monkeypatch):
     toolkit = _build(monkeypatch, all=True)
     slugs = [t.slug for t in toolkit.tools]
-    assert len(slugs) == 46, slugs
+    assert len(slugs) == 47, slugs
     assert len(set(slugs)) == len(slugs), "slugs must be unique"
     assert all(s.startswith("SCAVIO_") for s in slugs)
 
