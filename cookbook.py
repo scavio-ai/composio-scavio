@@ -23,7 +23,7 @@ def main() -> None:
 
     composio = Composio()
 
-    # Expose only the providers you need; here just Google.
+    # Expose only the providers you need; here just Google (14 tools).
     scavio = build_scavio_toolkit(
         enable_google=True,
         enable_amazon=False,
@@ -31,7 +31,10 @@ def main() -> None:
         enable_youtube=False,
         enable_reddit=False,
         enable_tiktok=False,
+        enable_tiktok_shop=False,
         enable_instagram=False,
+        enable_x=False,
+        enable_linkedin=False,
     )
 
     session = composio.create(
@@ -39,9 +42,11 @@ def main() -> None:
         experimental={"custom_toolkits": [scavio]},
     )
 
+    # Google v2 params are native: gl (country), hl (language), and start, which is a
+    # 0-based result OFFSET rather than a page number (0 = page 1, 10 = page 2).
     result = session.tools.execute(
         "SCAVIO_GOOGLE_SEARCH",
-        arguments={"query": "best structured search API for AI agents", "country_code": "us"},
+        arguments={"query": "best structured search API for AI agents", "gl": "us", "hl": "en"},
     )
     print(result)
 
