@@ -130,6 +130,25 @@ def test_youtube_comment_replies_passes_reply_cursor(monkeypatch):
     assert out["kwargs"] == {"video_id": "vid", "reply_cursor": "rc"}
 
 
+def test_reddit_search_takes_only_query_and_cursor(monkeypatch):
+    toolkit = _build(monkeypatch, enable_google=False, enable_amazon=False, enable_walmart=False,
+                     enable_youtube=False, enable_reddit=True, enable_tiktok=False, enable_instagram=False)
+    tool = next(t for t in toolkit.tools if t.slug == "SCAVIO_REDDIT_SEARCH")
+    assert set(tool.input_params.model_fields) == {"query", "cursor"}
+    out = tool.execute(tool.input_params(query="serpapi alternative", cursor="c1"), None)
+    assert out["method"] == "search"
+    assert out["kwargs"] == {"query": "serpapi alternative", "cursor": "c1"}
+
+
+def test_reddit_post_takes_url_only(monkeypatch):
+    toolkit = _build(monkeypatch, enable_google=False, enable_amazon=False, enable_walmart=False,
+                     enable_youtube=False, enable_reddit=True, enable_tiktok=False, enable_instagram=False)
+    tool = next(t for t in toolkit.tools if t.slug == "SCAVIO_REDDIT_POST")
+    out = tool.execute(tool.input_params(url="https://www.reddit.com/r/programming/comments/abc123/x/"), None)
+    assert out["method"] == "post"
+    assert out["kwargs"] == {"url": "https://www.reddit.com/r/programming/comments/abc123/x/"}
+
+
 def test_error_is_returned_as_dict(monkeypatch):
     def boom(**kwargs):
         raise RuntimeError("network down")

@@ -2,7 +2,7 @@
 
 [Scavio](https://scavio.dev) real-time search tools for [Composio](https://composio.dev).
 
-Scavio is a single Search API over Google, YouTube, Amazon, Walmart, Reddit, TikTok, and Instagram. This package exposes those endpoints as a Composio custom toolkit so your agents can pull structured, up-to-date results across any Composio-supported framework (OpenAI, Anthropic, LangChain, CrewAI, and more).
+Scavio is a single Search API over Google, YouTube, Amazon, Walmart, Reddit, TikTok, TikTok Shop, Instagram, X and LinkedIn. This package exposes the Google, YouTube, Amazon, Walmart, Reddit, TikTok and Instagram endpoints as a Composio custom toolkit so your agents can pull structured, up-to-date results across any Composio-supported framework (OpenAI, Anthropic, LangChain, CrewAI, and more).
 
 > **Amazon changed (breaking).** The upstream provider moved in 2026-07:
 > `domain` is replaced by `country`, a two-letter marketplace code (`us`, `gb`
@@ -12,6 +12,12 @@ Scavio is a single Search API over Google, YouTube, Amazon, Walmart, Reddit, Tik
 > (`sort_by` returns the identical unordered set for every value), so they are
 > removed rather than kept as silent no-ops. Rank and filter results yourself.
 
+> **Reddit search has no filters.** `/reddit/search` accepts only `query` and
+> `cursor`; the API strips anything else, so the old `type` and `sort` args
+> narrowed nothing and are removed. It returns `data.results` with `next_cursor`
+> and `has_more`. `SCAVIO_REDDIT_POST` returns the post itself only -- comments
+> are not included.
+
 ## Install
 
 ```bash
@@ -20,7 +26,7 @@ pip install composio-scavio
 
 ## Setup
 
-Get a Scavio API key from the [Scavio Dashboard](https://dashboard.scavio.dev) (new accounts get 50 free credits to start, no credit card). Set it as an environment variable or pass it directly.
+Get a Scavio API key from the [Scavio Dashboard](https://dashboard.scavio.dev) (new accounts get 50 one-time signup credits, no credit card; the free plan does not refill monthly). Set it as an environment variable or pass it directly.
 
 ```bash
 export SCAVIO_API_KEY=sk_...
@@ -73,7 +79,7 @@ All tools are namespaced under the `SCAVIO` toolkit. Each provider is gated by a
 
 ## Credits
 
-Most endpoints cost 1 credit, including Google. Instagram costs 8-10 credits per call per endpoint, except user posts which costs 2. YouTube search and shorts cost 2, YouTube streams 3, and YouTube transcript 8. See [scavio.dev/docs](https://scavio.dev/docs).
+Most endpoints cost 1 credit, including Google (`/api/v2/google`), Reddit, TikTok, Amazon and Walmart. Instagram costs 10 credits per call, except post and comment replies (8) and user posts (2). YouTube search and shorts cost 2, YouTube streams 3, and YouTube transcript 8. See [scavio.dev/docs](https://scavio.dev/docs).
 
 ## Links
 

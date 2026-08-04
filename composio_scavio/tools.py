@@ -1,8 +1,10 @@
 """Scavio tools for Composio.
 
-Exposes the Scavio search API (Google, YouTube, Amazon, Walmart, Reddit, TikTok,
-Instagram) as a Composio custom toolkit. Build the toolkit with
-``build_scavio_toolkit()`` and bind it to a session::
+Scavio is a single Search API over Google, YouTube, Amazon, Walmart, Reddit,
+TikTok, TikTok Shop, Instagram, X and LinkedIn. This toolkit exposes the Google,
+YouTube, Amazon, Walmart, Reddit, TikTok and Instagram endpoints as a Composio
+custom toolkit. Build the toolkit with ``build_scavio_toolkit()`` and bind it to
+a session::
 
     from composio import Composio
     from composio_scavio import build_scavio_toolkit
@@ -210,15 +212,16 @@ class YouTubeStreamsInput(BaseModel):
 
 
 # Reddit
+# /reddit/search takes ONLY query + cursor. `type` and `sort` were never real:
+# the API strips unknown fields, so they filtered nothing while making the agent
+# believe the result set was narrowed. Removed rather than kept as no-ops.
 class RedditSearchInput(BaseModel):
     query: str = Field(description="The Reddit search query.")
-    type: Optional[str] = Field(None, description="Search type, e.g. 'posts', 'subreddits', 'users'.")
-    sort: Optional[str] = Field(None, description="Sort order, e.g. 'relevance', 'new', 'top'.")
-    cursor: Optional[str] = Field(None, description="Pagination cursor.")
+    cursor: Optional[str] = Field(None, description="Pagination cursor: pass 'next_cursor' from a prior response.")
 
 
 class RedditPostInput(BaseModel):
-    url: str = Field(description="Full URL of the Reddit post to fetch with its comments.")
+    url: str = Field(description="Full URL of the Reddit post.")
 
 
 # TikTok
@@ -388,8 +391,9 @@ def build_scavio_toolkit(
     """Build a Composio custom toolkit exposing Scavio search tools.
 
     Scavio is a single Search API over Google, YouTube, Amazon, Walmart, Reddit,
-    TikTok, and Instagram. Each provider is gated by an ``enable_*`` flag so you
-    expose only the tools your agent needs.
+    TikTok, TikTok Shop, Instagram, X and LinkedIn; this toolkit covers the first
+    seven. Each provider is gated by an ``enable_*`` flag so you expose only the
+    tools your agent needs.
 
     Args:
         api_key: Scavio API key. Falls back to the ``SCAVIO_API_KEY`` env var.
@@ -398,7 +402,7 @@ def build_scavio_toolkit(
         enable_walmart: Register the Walmart search and product tools. Defaults to True.
         enable_youtube: Register the YouTube tools (search, shorts, suggestions, video,
             comments, transcript, related, channel, streams, and more). Defaults to True.
-        enable_reddit: Register the Reddit search and post tools. Defaults to True.
+        enable_reddit: Register the Reddit search and post tools (1 credit each). Defaults to True.
         enable_tiktok: Register the TikTok tools. Defaults to True.
         enable_instagram: Register the Instagram tools. Defaults to True.
         all: Register every tool, ignoring the individual flags. Defaults to False.
@@ -415,7 +419,8 @@ def build_scavio_toolkit(
         name="Scavio",
         description=(
             "Real-time structured search over Google, YouTube, Amazon, Walmart, "
-            "Reddit, TikTok, and Instagram."
+            "Reddit, TikTok, and Instagram (part of the Scavio API, which also "
+            "covers TikTok Shop, X and LinkedIn)."
         ),
     )
 
@@ -433,29 +438,29 @@ def build_scavio_toolkit(
 
         @toolkit.tool()
         def scavio_amazon_search(input: AmazonSearchInput, ctx: Any = None) -> dict:
-            """Search Amazon for products matching a query. Results are unsorted and cannot be filtered."""
+            """Search Amazon for products matching a query. Results are unsorted and cannot be filtered. Costs 1 credit."""
             return _run(lambda: client.amazon.search(**dump(input)))
 
         @toolkit.tool()
         def scavio_amazon_product(input: AmazonProductInput, ctx: Any = None) -> dict:
-            """Fetch full Amazon product details by ASIN. price is the buy-box price only."""
+            """Fetch full Amazon product details by ASIN. price is the buy-box price only. Costs 1 credit."""
             return _run(lambda: client.amazon.product(**dump(input)))
 
         @toolkit.tool()
         def scavio_amazon_offers(input: AmazonOffersInput, ctx: Any = None) -> dict:
-            """List every seller offer for an Amazon ASIN: price, seller, condition, shipping, buy box. Page 1 only."""
+            """List every seller offer for an Amazon ASIN: price, seller, condition, shipping, buy box. Page 1 only. Costs 1 credit."""
             return _run(lambda: client.amazon.offers(**dump(input)))
 
     if all or enable_walmart:
 
         @toolkit.tool()
         def scavio_walmart_search(input: WalmartSearchInput, ctx: Any = None) -> dict:
-            """Search Walmart for products matching a query."""
+            """Search Walmart for products matching a query. Costs 1 credit."""
             return _run(lambda: client.walmart.search(**dump(input)))
 
         @toolkit.tool()
         def scavio_walmart_product(input: WalmartProductInput, ctx: Any = None) -> dict:
-            """Fetch full Walmart product details by product id."""
+            """Fetch full Walmart product details by product id. Costs 1 credit."""
             return _run(lambda: client.walmart.product(**dump(input)))
 
     if all or enable_youtube:
@@ -544,131 +549,131 @@ def build_scavio_toolkit(
 
         @toolkit.tool()
         def scavio_reddit_search(input: RedditSearchInput, ctx: Any = None) -> dict:
-            """Search Reddit posts, subreddits, or users."""
+            """Search Reddit posts. Returns data.results with next_cursor and has_more; page with cursor. Results cannot be filtered or sorted. Costs 1 credit."""
             return _run(lambda: client.reddit.search(**dump(input)))
 
         @toolkit.tool()
         def scavio_reddit_post(input: RedditPostInput, ctx: Any = None) -> dict:
-            """Fetch a Reddit post and its comment thread by URL."""
+            """Fetch one Reddit post by URL. Returns a flat post object under data (post_id, title, text, url, subreddit, author, score, upvote_ratio, num_comments, created_at, is_nsfw, is_video, thumbnail, media); comments are NOT included. Costs 1 credit."""
             return _run(lambda: client.reddit.post(**dump(input)))
 
     if all or enable_tiktok:
 
         @toolkit.tool()
         def scavio_tiktok_profile(input: TikTokProfileInput, ctx: Any = None) -> dict:
-            """Fetch a TikTok user profile by username or secUid."""
+            """Fetch a TikTok user profile by username or secUid. Costs 1 credit."""
             return _run(lambda: client.tiktok.profile(**dump(input)))
 
         @toolkit.tool()
         def scavio_tiktok_user_posts(input: TikTokUserPostsInput, ctx: Any = None) -> dict:
-            """List a TikTok user's posts by secUid."""
+            """List a TikTok user's posts by secUid. Costs 1 credit."""
             return _run(lambda: client.tiktok.user_posts(**dump(input)))
 
         @toolkit.tool()
         def scavio_tiktok_video(input: TikTokVideoInput, ctx: Any = None) -> dict:
-            """Fetch a TikTok video by id."""
+            """Fetch a TikTok video by id. Costs 1 credit."""
             return _run(lambda: client.tiktok.video(**dump(input)))
 
         @toolkit.tool()
         def scavio_tiktok_video_comments(input: TikTokVideoCommentsInput, ctx: Any = None) -> dict:
-            """List comments on a TikTok video."""
+            """List comments on a TikTok video. Costs 1 credit."""
             return _run(lambda: client.tiktok.video_comments(**dump(input)))
 
         @toolkit.tool()
         def scavio_tiktok_comment_replies(input: TikTokCommentRepliesInput, ctx: Any = None) -> dict:
-            """List replies to a TikTok video comment."""
+            """List replies to a TikTok video comment. Costs 1 credit."""
             return _run(lambda: client.tiktok.comment_replies(**dump(input)))
 
         @toolkit.tool()
         def scavio_tiktok_search_videos(input: TikTokSearchVideosInput, ctx: Any = None) -> dict:
-            """Search TikTok videos by keyword."""
+            """Search TikTok videos by keyword. Costs 1 credit."""
             return _run(lambda: client.tiktok.search_videos(**dump(input)))
 
         @toolkit.tool()
         def scavio_tiktok_search_users(input: TikTokSearchUsersInput, ctx: Any = None) -> dict:
-            """Search TikTok users by keyword."""
+            """Search TikTok users by keyword. Costs 1 credit."""
             return _run(lambda: client.tiktok.search_users(**dump(input)))
 
         @toolkit.tool()
         def scavio_tiktok_hashtag(input: TikTokHashtagInput, ctx: Any = None) -> dict:
-            """Fetch a TikTok hashtag by name or id."""
+            """Fetch a TikTok hashtag by name or id. Costs 1 credit."""
             return _run(lambda: client.tiktok.hashtag(**dump(input)))
 
         @toolkit.tool()
         def scavio_tiktok_hashtag_videos(input: TikTokHashtagVideosInput, ctx: Any = None) -> dict:
-            """List videos for a TikTok hashtag by id."""
+            """List videos for a TikTok hashtag by id. Costs 1 credit."""
             return _run(lambda: client.tiktok.hashtag_videos(**dump(input)))
 
         @toolkit.tool()
         def scavio_tiktok_user_followers(input: TikTokUserFollowersInput, ctx: Any = None) -> dict:
-            """List a TikTok user's followers by secUid."""
+            """List a TikTok user's followers by secUid. Costs 1 credit."""
             return _run(lambda: client.tiktok.user_followers(**dump(input)))
 
         @toolkit.tool()
         def scavio_tiktok_user_followings(input: TikTokUserFollowingsInput, ctx: Any = None) -> dict:
-            """List the accounts a TikTok user follows, by secUid."""
+            """List the accounts a TikTok user follows, by secUid. Costs 1 credit."""
             return _run(lambda: client.tiktok.user_followings(**dump(input)))
 
     if all or enable_instagram:
 
         @toolkit.tool()
         def scavio_instagram_profile(input: InstagramProfileInput, ctx: Any = None) -> dict:
-            """Fetch an Instagram profile by username or user id."""
+            """Fetch an Instagram profile by username or user id. Costs 10 credits."""
             return _run(lambda: client.instagram.profile(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_posts(input: InstagramUserPostsInput, ctx: Any = None) -> dict:
-            """List an Instagram user's posts."""
+            """List an Instagram user's posts. Costs 2 credits, the cheapest Instagram endpoint."""
             return _run(lambda: client.instagram.user_posts(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_reels(input: InstagramUserReelsInput, ctx: Any = None) -> dict:
-            """List an Instagram user's reels."""
+            """List an Instagram user's reels. Costs 10 credits."""
             return _run(lambda: client.instagram.user_reels(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_tagged(input: InstagramUserTaggedInput, ctx: Any = None) -> dict:
-            """List posts an Instagram user is tagged in."""
+            """List posts an Instagram user is tagged in. Costs 10 credits."""
             return _run(lambda: client.instagram.user_tagged(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_stories(input: InstagramUserStoriesInput, ctx: Any = None) -> dict:
-            """Fetch an Instagram user's current stories."""
+            """Fetch an Instagram user's current stories. Costs 10 credits."""
             return _run(lambda: client.instagram.user_stories(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_post(input: InstagramPostInput, ctx: Any = None) -> dict:
-            """Fetch an Instagram post by URL, media id, or shortcode."""
+            """Fetch an Instagram post by URL, media id, or shortcode. Costs 8 credits."""
             return _run(lambda: client.instagram.post(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_post_comments(input: InstagramPostCommentsInput, ctx: Any = None) -> dict:
-            """List comments on an Instagram post by shortcode or URL."""
+            """List comments on an Instagram post by shortcode or URL. Costs 10 credits."""
             return _run(lambda: client.instagram.post_comments(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_comment_replies(input: InstagramCommentRepliesInput, ctx: Any = None) -> dict:
-            """List replies to an Instagram post comment."""
+            """List replies to an Instagram post comment. Costs 8 credits."""
             return _run(lambda: client.instagram.comment_replies(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_search_users(input: InstagramSearchUsersInput, ctx: Any = None) -> dict:
-            """Search Instagram users by keyword."""
+            """Search Instagram users by keyword. Costs 10 credits."""
             return _run(lambda: client.instagram.search_users(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_search_hashtags(input: InstagramSearchHashtagsInput, ctx: Any = None) -> dict:
-            """Search Instagram hashtags by keyword."""
+            """Search Instagram hashtags by keyword. Costs 10 credits."""
             return _run(lambda: client.instagram.search_hashtags(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_followers(input: InstagramUserFollowersInput, ctx: Any = None) -> dict:
-            """List an Instagram user's followers."""
+            """List an Instagram user's followers. Costs 10 credits."""
             return _run(lambda: client.instagram.user_followers(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_followings(input: InstagramUserFollowingsInput, ctx: Any = None) -> dict:
-            """List the accounts an Instagram user follows."""
+            """List the accounts an Instagram user follows. Costs 10 credits."""
             return _run(lambda: client.instagram.user_followings(**dump(input)))
 
     return toolkit
