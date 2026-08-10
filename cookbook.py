@@ -23,9 +23,12 @@ def main() -> None:
 
     composio = Composio()
 
-    # Expose only the providers you need; here just Google (14 tools).
+    # Expose only the providers you need; here Google (14 tools) plus extract (1).
+    # The 21 verticals added in 0.4.0 (Zillow, SEC EDGAR, G2, Meta Ad Library, ...)
+    # are opt-in, so they stay off unless you name them or pass all=True.
     scavio = build_scavio_toolkit(
         enable_google=True,
+        enable_extract=True,
         enable_amazon=False,
         enable_walmart=False,
         enable_youtube=False,
@@ -49,6 +52,15 @@ def main() -> None:
         arguments={"query": "best structured search API for AI agents", "gl": "us", "hl": "en"},
     )
     print(result)
+
+    # extract is a CORE endpoint surfaced as one tool: point it at any URL and get the
+    # page back as Markdown, plain text or raw HTML. Tier-priced by mode (normal and
+    # advanced 1 credit, ultra 2), and only a successful extraction is billed.
+    page = session.tools.execute(
+        "SCAVIO_EXTRACT",
+        arguments={"url": "https://scavio.dev/pricing", "format": "markdown"},
+    )
+    print(page)
 
 
 if __name__ == "__main__":

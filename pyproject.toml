@@ -4,16 +4,16 @@ build-backend = "hatchling.build"
 
 [project]
 name = "composio-scavio"
-version = "0.3.0"
-description = "Scavio real-time search tools for Composio (Google, YouTube, Amazon, Walmart, Reddit, TikTok, TikTok Shop, Instagram, X, LinkedIn)"
+version = "0.4.0"
+description = "Scavio real-time search tools for Composio: 189 tools over 32 platforms (Google, YouTube, Amazon, Walmart, eBay, Target, Home Depot, Reddit, TikTok, TikTok Shop, Instagram, X, LinkedIn, Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, Tripadvisor, Yelp, Indeed, Glassdoor, App Store, Google Play, SEC EDGAR, Companies House, G2, Capterra, Google Ads, Meta Ad Library) plus extract"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [{ name = "Scavio", email = "scavio.dev@gmail.com" }]
-keywords = ["composio", "scavio", "search", "agents", "tools", "serp", "google"]
+keywords = ["composio", "scavio", "search", "agents", "tools", "serp", "google", "scraping", "extract", "ecommerce", "real-estate", "reviews", "jobs"]
 dependencies = [
     "composio>=0.17.0",
-    "scavio>=0.14.0",
+    "scavio>=0.15.0",
     "pydantic>=2.0",
 ]
 
