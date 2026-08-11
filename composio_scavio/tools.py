@@ -1,6 +1,6 @@
 """Scavio tools for Composio.
 
-Scavio is a single Search API over 32 platforms - Google, YouTube, Amazon,
+Scavio is a single Search API over 31 platforms - Google, YouTube, Amazon,
 Walmart, eBay, Target, Home Depot, Reddit, TikTok, TikTok Shop, Instagram, X,
 LinkedIn, Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, Tripadvisor,
 Yelp, Indeed, Glassdoor, the Apple App Store, Google Play, SEC EDGAR, Companies
@@ -1606,7 +1606,7 @@ def build_scavio_toolkit(
 ) -> "ExperimentalToolkit":
     """Build a Composio custom toolkit exposing Scavio search tools.
 
-    Scavio is a single Search API over 32 platforms plus a URL reader; this
+    Scavio is a single Search API over 31 platforms plus a URL reader; this
     toolkit covers every live endpoint of all of them - 189 tools in total.
     Each provider is gated by an ``enable_*`` flag so you expose only the tools
     your agent needs.
@@ -1667,7 +1667,7 @@ def build_scavio_toolkit(
         slug="SCAVIO",
         name="Scavio",
         description=(
-            "Real-time structured search over 32 platforms - Google, YouTube, Amazon, "
+            "Real-time structured search over 31 platforms - Google, YouTube, Amazon, "
             "Walmart, eBay, Target, Home Depot, Reddit, TikTok, TikTok Shop, Instagram, "
             "X, LinkedIn, Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, "
             "Tripadvisor, Yelp, Indeed, Glassdoor, the Apple App Store, Google Play, "

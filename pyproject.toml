@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "composio-scavio"
-version = "0.4.0"
+version = "0.4.1"
 description = "Scavio real-time search tools for Composio: 189 tools over 32 platforms (Google, YouTube, Amazon, Walmart, eBay, Target, Home Depot, Reddit, TikTok, TikTok Shop, Instagram, X, LinkedIn, Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, Tripadvisor, Yelp, Indeed, Glassdoor, App Store, Google Play, SEC EDGAR, Companies House, G2, Capterra, Google Ads, Meta Ad Library) plus extract"
 readme = "README.md"
 requires-python = ">=3.9"

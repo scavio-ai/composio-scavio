@@ -350,7 +350,7 @@ def build() -> Dict[str, Any]:
             "title": "Scavio Search API",
             "version": "1.0.0",
             "description": (
-                "Real-time structured search over 32 platforms - Google, YouTube, Amazon, Walmart, "
+                "Real-time structured search over 31 platforms - Google, YouTube, Amazon, Walmart, "
                 "eBay, Target, Home Depot, Reddit, TikTok, TikTok Shop, Instagram, X, LinkedIn, "
                 "Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, Tripadvisor, Yelp, Indeed, "
                 "Glassdoor, the Apple App Store, Google Play, SEC EDGAR, Companies House, G2, "

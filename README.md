@@ -2,7 +2,7 @@
 
 [Scavio](https://scavio.dev) real-time search tools for [Composio](https://composio.dev).
 
-Scavio is a single Search API over 32 platforms -- Google, YouTube, Amazon, Walmart, eBay, Target, Home Depot, Reddit, TikTok, TikTok Shop, Instagram, X, LinkedIn, Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, Tripadvisor, Yelp, Indeed, Glassdoor, the Apple App Store, Google Play, SEC EDGAR, Companies House, G2, Capterra, Google Ads Transparency and the Meta Ad Library -- plus `extract`, which reads any URL as Markdown, plain text or raw HTML. This package exposes **189 tools covering every live Scavio endpoint** as a Composio custom toolkit, so your agents can pull structured, up-to-date results across any Composio-supported framework (OpenAI, Anthropic, LangChain, CrewAI, and more).
+Scavio is a single Search API over 31 platforms -- Google, YouTube, Amazon, Walmart, eBay, Target, Home Depot, Reddit, TikTok, TikTok Shop, Instagram, X, LinkedIn, Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, Tripadvisor, Yelp, Indeed, Glassdoor, the Apple App Store, Google Play, SEC EDGAR, Companies House, G2, Capterra, Google Ads Transparency and the Meta Ad Library -- plus `extract`, which reads any URL as Markdown, plain text or raw HTML. This package exposes **189 tools covering every live Scavio endpoint** as a Composio custom toolkit, so your agents can pull structured, up-to-date results across any Composio-supported framework (OpenAI, Anthropic, LangChain, CrewAI, and more).
 
 > **New in 0.4.0: 21 more platforms, and they are opt-in.** Registering all 189
 > tools at once buries the handful an agent actually wants, so the verticals
