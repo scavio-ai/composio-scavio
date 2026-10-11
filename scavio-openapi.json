@@ -5535,8 +5535,8 @@
         "tags": [
           "YouTube"
         ],
-        "summary": "Transcript / captions for a YouTube video. Costs 8 credits.",
-        "description": "Transcript / captions for a YouTube video. Costs 8 credits.. Costs 8 credits.",
+        "summary": "Transcript / captions for a YouTube video. Costs 5 credits.",
+        "description": "Transcript / captions for a YouTube video. Costs 5 credits.",
         "security": [
           {
             "Bearer": []
@@ -5576,7 +5576,7 @@
         },
         "responses": {
           "200": {
-            "description": "Transcript / captions for a YouTube video. Costs 8 credits.",
+            "description": "Transcript / captions for a YouTube video. Costs 5 credits.",
             "content": {
               "application/json": {
                 "schema": {

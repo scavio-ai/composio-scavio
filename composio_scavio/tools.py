@@ -1963,7 +1963,7 @@ def build_scavio_toolkit(
 
         @toolkit.tool()
         def scavio_youtube_transcript(input: YouTubeTranscriptInput, ctx: Any = None) -> dict:
-            """Fetch the transcript or timed captions for a YouTube video. Costs 8 credits."""
+            """Fetch the transcript or timed captions for a YouTube video. Costs 5 credits."""
             return _run(lambda: client.youtube.transcript(**dump(input)))
 
         @toolkit.tool()

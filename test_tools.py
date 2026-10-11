@@ -518,7 +518,7 @@ def test_known_credit_costs_are_stated(monkeypatch):
         "SCAVIO_YOUTUBE_SEARCH": "2 credits",
         "SCAVIO_YOUTUBE_SHORTS": "2 credits",
         "SCAVIO_YOUTUBE_STREAMS": "3 credits",
-        "SCAVIO_YOUTUBE_TRANSCRIPT": "8 credits",
+        "SCAVIO_YOUTUBE_TRANSCRIPT": "5 credits",
         "SCAVIO_INSTAGRAM_PROFILE": "10 credits",
         "SCAVIO_INSTAGRAM_POST": "8 credits",
         "SCAVIO_INSTAGRAM_COMMENT_REPLIES": "8 credits",
