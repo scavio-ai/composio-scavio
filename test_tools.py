@@ -22,8 +22,9 @@ class _Recorder:
         return _call
 
 
-# The 31 SDK namespaces, plus the pseudo-provider "extract" for the top-level
-# client.extract() method, which is a CORE endpoint and never a namespace.
+# The 31 SDK namespaces, plus two pseudo-providers on the callable
+# client.extract namespace: "extract" (client.extract(url), one page) and
+# "crawl" (client.extract.map / .crawl / .crawl_status / .batch / .batch_status).
 _NAMESPACES = (
     "google", "amazon", "walmart", "youtube", "reddit", "tiktok",
     "tiktok_shop", "instagram", "x", "linkedin", "threads", "kuaishou",
@@ -32,12 +33,13 @@ _NAMESPACES = (
     "sec", "redfin", "companies_house", "g2", "capterra", "google_ads",
     "meta_ads",
 )
-_PROVIDERS = _NAMESPACES + ("extract",)
+_PROVIDERS = _NAMESPACES + ("extract", "crawl")
 
 # Tool count per provider, and therefore the coverage contract of this package.
-# Total = 189 = every live Scavio endpoint (195 in the SDK, minus the deprecated
-# /youtube/metadata alias, which is not exposed, minus the 5 retired LinkedIn
-# endpoints, which are never registered).
+# Total = 194 = every live Scavio endpoint (189 platform + extract tools, plus the
+# 5 website tools: map, crawl, crawl status, batch, batch status; the deprecated
+# /youtube/metadata alias and the 5 retired LinkedIn endpoints are never
+# registered, and job cancellation is left to the SDK/REST API).
 EXPECTED_COUNTS = {
     "google": 14,
     "amazon": 4,
@@ -71,6 +73,7 @@ EXPECTED_COUNTS = {
     "google_ads": 3,
     "meta_ads": 3,
     "extract": 1,
+    "crawl": 5,
 }
 
 # The verticals added in 0.4.0 are opt-in: registering all 189 tools at once
@@ -79,9 +82,17 @@ OPT_IN = (
     "threads", "kuaishou", "ebay", "target", "home_depot", "zillow", "booking",
     "tripadvisor", "indeed", "airbnb", "glassdoor", "yelp", "app_store",
     "google_play", "sec", "redfin", "companies_house", "g2", "capterra",
-    "google_ads", "meta_ads",
+    "google_ads", "meta_ads", "crawl",
 )
 DEFAULT_ON = tuple(p for p in _PROVIDERS if p not in OPT_IN)
+
+
+class _FakeExtract(_Recorder):
+    """client.extract: callable for one page, and a namespace for map/crawl/batch."""
+
+    def __call__(self, **kwargs):
+        self._calls.append((None, "extract", kwargs))
+        return {"ok": True, "namespace": None, "method": "extract", "kwargs": kwargs}
 
 
 class _FakeClient:
@@ -89,11 +100,7 @@ class _FakeClient:
         self.calls = []
         for ns in _NAMESPACES:
             setattr(self, ns, _Recorder(ns, self.calls))
-
-    def extract(self, **kwargs):
-        """extract is a top-level method on the client, not a namespace."""
-        self.calls.append((None, "extract", kwargs))
-        return {"ok": True, "namespace": None, "method": "extract", "kwargs": kwargs}
+        self.extract = _FakeExtract("extract", self.calls)
 
 
 def _build(monkeypatch, **kwargs):
@@ -129,7 +136,7 @@ def _sample(annotation):
 def test_all_tools_register(monkeypatch):
     toolkit = _build(monkeypatch, all=True)
     slugs = [t.slug for t in toolkit.tools]
-    assert len(slugs) == 189, len(slugs)
+    assert len(slugs) == 194, len(slugs)
     assert len(set(slugs)) == len(slugs), "slugs must be unique"
     assert all(s.startswith("SCAVIO_") for s in slugs)
 
@@ -138,7 +145,7 @@ def test_per_provider_coverage(monkeypatch):
     """Every provider registers exactly the number of tools it has live endpoints."""
     actual = {p: len(_only(monkeypatch, p).tools) for p in _PROVIDERS}
     assert actual == EXPECTED_COUNTS
-    assert sum(actual.values()) == 189
+    assert sum(actual.values()) == 194
 
 
 def test_the_new_verticals_are_opt_in(monkeypatch):
@@ -147,7 +154,7 @@ def test_the_new_verticals_are_opt_in(monkeypatch):
     assert len(slugs) == sum(EXPECTED_COUNTS[p] for p in DEFAULT_ON) == 104
     assert "SCAVIO_EXTRACT" in slugs, "extract is one tool and leads the agent surface"
     assert "SCAVIO_WALMART_SELLER" in slugs, "walmart was already on; its new endpoints ride along"
-    for absent in ("SCAVIO_ZILLOW_SEARCH", "SCAVIO_G2_PRODUCT", "SCAVIO_SEC_LOOKUP"):
+    for absent in ("SCAVIO_ZILLOW_SEARCH", "SCAVIO_G2_PRODUCT", "SCAVIO_SEC_LOOKUP", "SCAVIO_CRAWL_WEBSITE"):
         assert absent not in slugs
 
 
@@ -546,3 +553,140 @@ def test_error_is_returned_as_dict(monkeypatch):
     tool = next(t for t in toolkit.tools if t.slug == "SCAVIO_GOOGLE_SEARCH")
     out = tool.execute(tool.input_params(query="x"), None)
     assert out == {"error": "network down"}
+
+
+# --------------------------------------------------------------------------- #
+# Map, crawl and batch (enable_crawl)
+# --------------------------------------------------------------------------- #
+
+JOB_ID = "crawl_01a12d21-fb42-7000-88cf-6887f653ee5d"
+
+
+class _JobClient(_FakeClient):
+    """A fake whose crawl/batch jobs move through scripted statuses."""
+
+    statuses = ["running", "completed"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        script = iter(self.statuses)
+        calls = self.calls
+
+        def start(kind):
+            def _start(**kwargs):
+                calls.append(("extract", kind, kwargs))
+                return {"data": {"id": JOB_ID, "status": "queued"}, "credits_used": 0}
+            return _start
+
+        def status(kind):
+            def _status(**kwargs):
+                calls.append(("extract", kind, kwargs))
+                return {"data": {"id": kwargs["job_id"], "status": next(script, "completed"), "results": []}}
+            return _status
+
+        self.extract.crawl = start("crawl")
+        self.extract.batch = start("batch")
+        self.extract.crawl_status = status("crawl_status")
+        self.extract.batch_status = status("batch_status")
+
+
+def _crawl_tools(monkeypatch, client=_JobClient):
+    monkeypatch.setattr(tools_mod, "ScavioClient", client)
+    monkeypatch.setattr(tools_mod, "WEB_JOB_POLL_INTERVAL", 0.0)
+    flags = {f"enable_{p}": (p == "crawl") for p in _PROVIDERS}
+    toolkit = build_scavio_toolkit(api_key="test", **flags)
+    return {t.slug: t for t in toolkit.tools}, toolkit
+
+
+def test_crawl_tools_register_behind_their_flag(monkeypatch):
+    tools, _ = _crawl_tools(monkeypatch)
+    assert set(tools) == {
+        "SCAVIO_MAP_WEBSITE", "SCAVIO_CRAWL_WEBSITE", "SCAVIO_CRAWL_STATUS",
+        "SCAVIO_BATCH_EXTRACT", "SCAVIO_BATCH_STATUS",
+    }
+
+
+def test_map_calls_extract_map(monkeypatch):
+    tools, _ = _crawl_tools(monkeypatch, _FakeClient)
+    tool = tools["SCAVIO_MAP_WEBSITE"]
+    out = tool.execute(tool.input_params(url="scavio.dev", limit=5, include_paths=["/blog/**"]), None)
+    assert (out["namespace"], out["method"]) == ("extract", "map")
+    assert out["kwargs"] == {"url": "scavio.dev", "limit": 5, "include_paths": ["/blog/**"]}
+
+
+def test_crawl_waits_until_completed_then_reads_results(monkeypatch):
+    tools, _ = _crawl_tools(monkeypatch)
+    tool = tools["SCAVIO_CRAWL_WEBSITE"]
+    out = tool.execute(tool.input_params(url="https://hono.dev/docs", max_pages=3, wait_seconds=30), None)
+    assert out["data"]["status"] == "completed"
+
+
+def test_crawl_call_sequence(monkeypatch):
+    monkeypatch.setattr(tools_mod, "WEB_JOB_POLL_INTERVAL", 0.0)
+    client = _JobClient()
+    monkeypatch.setattr(tools_mod, "ScavioClient", lambda *a, **k: client)
+    flags = {f"enable_{p}": (p == "crawl") for p in _PROVIDERS}
+    tools = {t.slug: t for t in build_scavio_toolkit(api_key="test", **flags).tools}
+    tool = tools["SCAVIO_CRAWL_WEBSITE"]
+    tool.execute(tool.input_params(url="https://hono.dev/docs", max_pages=3, limit=5), None)
+    assert client.calls[0] == ("extract", "crawl", {"url": "https://hono.dev/docs", "max_pages": 3})
+    # Progress probes skip content; the final read carries the caller's paging.
+    assert client.calls[1] == ("extract", "crawl_status", {"job_id": JOB_ID, "limit": 1, "include_content": False})
+    assert client.calls[-1] == ("extract", "crawl_status", {"job_id": JOB_ID, "limit": 5})
+
+
+def test_crawl_wait_zero_returns_the_queued_job(monkeypatch):
+    client = _JobClient()
+    monkeypatch.setattr(tools_mod, "ScavioClient", lambda *a, **k: client)
+    flags = {f"enable_{p}": (p == "crawl") for p in _PROVIDERS}
+    tools = {t.slug: t for t in build_scavio_toolkit(api_key="test", **flags).tools}
+    tool = tools["SCAVIO_CRAWL_WEBSITE"]
+    out = tool.execute(tool.input_params(url="https://hono.dev/docs", wait_seconds=0), None)
+    assert out["data"]["status"] == "queued"
+    assert len(client.calls) == 1
+
+
+def test_crawl_still_running_when_the_wait_ends(monkeypatch):
+    class Running(_JobClient):
+        statuses = ["running"] * 100
+
+    client = Running()
+    monkeypatch.setattr(tools_mod, "ScavioClient", lambda *a, **k: client)
+    monkeypatch.setattr(tools_mod, "WEB_JOB_POLL_INTERVAL", 0.0)
+    ticks = iter(range(0, 10_000, 10))
+    monkeypatch.setattr(tools_mod.time, "monotonic", lambda: float(next(ticks)))
+    flags = {f"enable_{p}": (p == "crawl") for p in _PROVIDERS}
+    tools = {t.slug: t for t in build_scavio_toolkit(api_key="test", **flags).tools}
+    tool = tools["SCAVIO_CRAWL_WEBSITE"]
+    out = tool.execute(tool.input_params(url="https://hono.dev/docs", wait_seconds=5), None)
+    assert out["data"]["status"] == "running"
+    assert out["data"]["id"] == JOB_ID
+
+
+def test_batch_and_status_tools(monkeypatch):
+    client = _JobClient()
+    monkeypatch.setattr(tools_mod, "ScavioClient", lambda *a, **k: client)
+    monkeypatch.setattr(tools_mod, "WEB_JOB_POLL_INTERVAL", 0.0)
+    flags = {f"enable_{p}": (p == "crawl") for p in _PROVIDERS}
+    tools = {t.slug: t for t in build_scavio_toolkit(api_key="test", **flags).tools}
+    batch = tools["SCAVIO_BATCH_EXTRACT"]
+    out = batch.execute(batch.input_params(urls=["https://example.com/"], mode="normal"), None)
+    assert out["data"]["status"] == "completed"
+    assert client.calls[0] == ("extract", "batch", {"urls": ["https://example.com/"], "mode": "normal"})
+    status = tools["SCAVIO_CRAWL_STATUS"]
+    status.execute(status.input_params(id="crawl_1", cursor="25", include_content=False), None)
+    assert client.calls[-1] == ("extract", "crawl_status", {"job_id": "crawl_1", "cursor": "25", "limit": 10, "include_content": False})
+    status = tools["SCAVIO_BATCH_STATUS"]
+    status.execute(status.input_params(id="batch_1"), None)
+    assert client.calls[-1] == ("extract", "batch_status", {"job_id": "batch_1", "limit": 10})
+
+
+def test_website_tools_never_describe_the_fetch_method(monkeypatch):
+    import json
+
+    tools, _ = _crawl_tools(monkeypatch)
+    extract = {t.slug: t for t in _only(monkeypatch, "extract").tools}
+    for tool in list(tools.values()) + list(extract.values()):
+        text = ((tool.description or "") + json.dumps(tool.input_params.model_json_schema())).lower()
+        for word in ("proxy", "residential", "datacenter", "headless", "browser"):
+            assert word not in text, (tool.slug, word)

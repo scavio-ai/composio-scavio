@@ -21,8 +21,9 @@ toolkit exposes every live endpoint of all of them. Build the toolkit with
 
 Every provider is gated by an ``enable_*`` flag so an agent only sees the tools
 it needs. The ten original platforms plus ``extract`` are on by default; the 21
-platforms added in 0.4.0 are OPT-IN, because handing an agent all 189 tools at
-once buries the ones it actually needs. Turn a vertical on explicitly::
+platforms added in 0.4.0 and the website tools added in 0.5.0 (map, crawl,
+batch) are OPT-IN, because handing an agent all 194 tools at once buries the
+ones it actually needs. Turn a vertical on explicitly::
 
     scavio = build_scavio_toolkit(enable_zillow=True, enable_redfin=True)
 
@@ -31,7 +32,8 @@ response as a dict.
 """
 
 import os
-from typing import Any, Callable, Dict, Optional, Union
+import time
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -1556,7 +1558,117 @@ class MetaAdsAdInput(BaseModel):
 class ExtractInput(BaseModel):
     url: str = Field(description="Page to read (1-2048 characters). http(s) only; a bare host is upgraded to https, and loopback, private, link-local and metadata hosts are rejected with a 400.")
     format: Optional[str] = Field(None, description="Output format: 'html' is the raw page, 'markdown' a readability extraction, 'text' that markdown flattened to plain text (server default 'markdown').")
-    mode: Optional[str] = Field(None, description="Fetch tier, and the price-bearing parameter: 'normal' plain datacenter fetch (1 credit), 'advanced' full browser render (1 credit), 'ultra' the hardest-target tier (2 credits). Server default 'normal'.")
+    mode: Optional[str] = Field(None, description="Tier, and the price-bearing parameter: 'normal' is the standard fetch (1 credit), 'advanced' renders JavaScript-built pages (1 credit), 'ultra' reaches the hardest pages (2 credits). Server default 'normal'.")
+
+
+# Map, crawl and batch: the multi-page members of the Extract family, reached as
+# client.extract.map / .crawl / .crawl_status / .batch / .batch_status. Map
+# answers in one call. Crawl and batch are background jobs: the start tools
+# post the job, then wait up to wait_seconds for it to finish and return its
+# status with the first page of results either way. A job still running when
+# the wait ends keeps going; read the rest with the matching status tool.
+_JOB_MODE_DESC = "Tier, and the price-bearing parameter: 'normal' is the standard fetch, 'advanced' renders JavaScript-built pages, 'ultra' reaches the hardest pages. Per successful page: normal and advanced 1 credit, ultra 2. Server default 'normal'."
+_PATHS_DESC = "Path globs (max 20). '*' matches within one path segment, '**' across segments; a pattern without wildcards matches that path and everything under it. Example: ['/blog/**']."
+_JOB_FORMAT_DESC = "Format for each page, as on extract: 'html', 'markdown' or 'text' (server default 'markdown')."
+_WAIT_DESC = "Seconds to wait for the job to finish before returning, 0-300 (default 45). 0 returns the queued job at once. A job still running when the wait ends keeps going; read it later with its status tool and data.id."
+_RESULTS_LIMIT_DESC = "Results per response, 1-100 (default 10, to keep page content inside the context window; page on with next_cursor)."
+_INCLUDE_CONTENT_DESC = "Set false to list results without their page content (smaller responses). Server default true."
+
+WEB_JOB_POLL_INTERVAL = 3.0
+WEB_JOB_MAX_WAIT = 300
+_WEB_JOB_TERMINAL = frozenset({"completed", "failed", "cancelled"})
+
+
+class ExtractMapInput(BaseModel):
+    url: str = Field(description="The site to map. A bare host is upgraded to https.")
+    search: Optional[str] = Field(None, description="Only return URLs containing every word of this text (case-insensitive, max 200 characters).")
+    limit: Optional[int] = Field(None, ge=1, le=5000, description="Maximum links to return, 1-5000. Server default 1000 (or the plan's limit if lower: Free 500, PAYG 1,000, paid plans 5,000).")
+    sitemap: Optional[str] = Field(None, description="'include' (default) combines the site's sitemaps with the links on the start page; 'only' uses sitemaps alone; 'skip' uses page links alone.")
+    include_subdomains: Optional[bool] = Field(None, description="Also return URLs on subdomains of the site (server default false).")
+    include_paths: Optional[List[str]] = Field(None, description="Keep only URLs matching these. " + _PATHS_DESC)
+    exclude_paths: Optional[List[str]] = Field(None, description="Drop URLs matching these. " + _PATHS_DESC)
+    ignore_query_parameters: Optional[bool] = Field(None, description="Treat URLs that differ only by query string as one URL (server default true).")
+    mode: Optional[str] = Field(None, description="Tier: 'normal' is the standard fetch (1 credit), 'advanced' renders JavaScript-built pages (up to 2), 'ultra' reaches the hardest pages (up to 10), priced by what the call needed. Server default 'normal'.")
+
+
+class ExtractCrawlInput(BaseModel):
+    url: str = Field(description="Where the crawl starts. Only pages on the same site are crawled.")
+    max_pages: Optional[int] = Field(None, ge=1, le=10000, description="Maximum pages to fetch (server default 100). Plan limits: Free 10, PAYG 100, Project 500, Bootstrap 2,000, Startup 5,000, Growth 10,000.")
+    max_depth: Optional[int] = Field(None, ge=0, le=10, description="How many links away from the start page to follow, 0-10 (server default 3). 0 fetches only the start page.")
+    include_paths: Optional[List[str]] = Field(None, description="Crawl only paths matching these. " + _PATHS_DESC)
+    exclude_paths: Optional[List[str]] = Field(None, description="Skip paths matching these. " + _PATHS_DESC)
+    allow_subdomains: Optional[bool] = Field(None, description="Also crawl subdomains of the site (server default false).")
+    ignore_query_parameters: Optional[bool] = Field(None, description="Treat URLs that differ only by query string as one page (server default true).")
+    sitemap: Optional[str] = Field(None, description="'include' (default) also starts from the site's sitemap; 'skip' follows links only; 'only' fetches sitemap pages without following links.")
+    format: Optional[str] = Field(None, description=_JOB_FORMAT_DESC)
+    mode: Optional[str] = Field(None, description=_JOB_MODE_DESC)
+    wait_seconds: int = Field(45, ge=0, le=WEB_JOB_MAX_WAIT, description=_WAIT_DESC)
+    limit: Optional[int] = Field(10, ge=1, le=100, description=_RESULTS_LIMIT_DESC)
+    include_content: Optional[bool] = Field(None, description=_INCLUDE_CONTENT_DESC)
+
+
+class ExtractBatchInput(BaseModel):
+    urls: List[str] = Field(description="The pages to extract (duplicates removed). Plan limits: Free 10, PAYG 50, Project 100, Bootstrap 500, Startup and Growth 1,000.")
+    format: Optional[str] = Field(None, description=_JOB_FORMAT_DESC)
+    mode: Optional[str] = Field(None, description=_JOB_MODE_DESC)
+    wait_seconds: int = Field(45, ge=0, le=WEB_JOB_MAX_WAIT, description=_WAIT_DESC)
+    limit: Optional[int] = Field(10, ge=1, le=100, description=_RESULTS_LIMIT_DESC)
+    include_content: Optional[bool] = Field(None, description=_INCLUDE_CONTENT_DESC)
+
+
+class ExtractJobStatusInput(BaseModel):
+    id: str = Field(description="Job id returned when the job was started (data.id).")
+    cursor: Optional[str] = Field(None, description="next_cursor from the previous response, to read the next page.")
+    limit: Optional[int] = Field(10, ge=1, le=100, description=_RESULTS_LIMIT_DESC)
+    status: Optional[str] = Field(None, description="Only results with this status: 'succeeded', 'failed' or 'skipped'.")
+    include_content: Optional[bool] = Field(None, description=_INCLUDE_CONTENT_DESC)
+
+
+def _without_none(values: Dict[str, Any]) -> Dict[str, Any]:
+    return {k: v for k, v in values.items() if v is not None}
+
+
+def _wait_for_job(
+    status: Callable[..., Dict[str, Any]],
+    job_id: str,
+    wait_seconds: float,
+    query: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Poll a crawl/batch job until it finishes or the wait runs out.
+
+    Progress polls skip page content; the final read carries the caller's paging.
+    """
+    deadline = time.monotonic() + max(0.0, min(float(wait_seconds), WEB_JOB_MAX_WAIT))
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+        time.sleep(min(WEB_JOB_POLL_INTERVAL, remaining))
+        probe = status(job_id=job_id, limit=1, include_content=False)
+        if (probe.get("data") or {}).get("status") in _WEB_JOB_TERMINAL:
+            break
+    return status(job_id=job_id, **query)
+
+
+def _start_job(
+    start: Callable[..., Dict[str, Any]],
+    status: Callable[..., Dict[str, Any]],
+    values: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Start a crawl/batch job, then wait (bounded) and return its status page."""
+    wait_seconds = values.pop("wait_seconds", 45)
+    query = _without_none({"limit": values.pop("limit", None), "include_content": values.pop("include_content", None)})
+    created = start(**_without_none(values))
+    job_id = (created.get("data") or {}).get("id") if isinstance(created, dict) else None
+    if not job_id or wait_seconds <= 0:
+        return created
+    return _wait_for_job(status, job_id, wait_seconds, query)
+
+
+def _job_status(status: Callable[..., Dict[str, Any]], model: BaseModel) -> Dict[str, Any]:
+    values = model.model_dump()
+    job_id = values.pop("id")
+    return status(job_id=job_id, **_without_none(values))
 
 
 def _run(call: Callable[[], Dict[str, Any]]) -> Dict[str, Any]:
@@ -1602,18 +1714,20 @@ def build_scavio_toolkit(
     enable_capterra: bool = False,
     enable_google_ads: bool = False,
     enable_meta_ads: bool = False,
+    enable_crawl: bool = False,
     all: bool = False,
 ) -> "ExperimentalToolkit":
     """Build a Composio custom toolkit exposing Scavio search tools.
 
     Scavio is a single Search API over 31 platforms plus a URL reader; this
-    toolkit covers every live endpoint of all of them - 189 tools in total.
+    toolkit covers every live endpoint of all of them - 194 tools in total.
     Each provider is gated by an ``enable_*`` flag so you expose only the tools
     your agent needs.
 
     Defaults are deliberately narrow. The ten original platforms and ``extract``
     are on (104 tools); the 21 verticals added in 0.4.0 are opt-in, because
-    registering all 189 at once buries the handful an agent actually wants.
+    registering all 194 at once buries the handful an agent actually wants. The
+    5 website tools (map, crawl, batch) are opt-in too: a crawl bills per page.
 
     Args:
         api_key: Scavio API key. Falls back to the ``SCAVIO_API_KEY`` env var.
@@ -1654,6 +1768,10 @@ def build_scavio_toolkit(
         enable_capterra: Register the 3 Capterra Software Reviews tools. OPT-IN, defaults to False.
         enable_google_ads: Register the 3 Google Ads Transparency tools. OPT-IN, defaults to False.
         enable_meta_ads: Register the 3 Meta Ad Library tools. OPT-IN, defaults to False.
+        enable_crawl: Register the 5 website tools of the Extract family: map a
+            site's URLs, crawl a site, read a crawl's status, batch-extract a URL
+            list, read a batch's status. OPT-IN, defaults to False, because a
+            crawl bills per page.
         all: Register every tool, ignoring the individual flags. Defaults to False.
 
     Returns:
@@ -1673,7 +1791,7 @@ def build_scavio_toolkit(
             "Tripadvisor, Yelp, Indeed, Glassdoor, the Apple App Store, Google Play, "
             "SEC EDGAR, Companies House, G2, Capterra, Google Ads Transparency and the "
             "Meta Ad Library - plus extract, which reads any URL as Markdown, plain "
-            "text or raw HTML."
+            "text or raw HTML, and website map, crawl and batch extract."
         ),
     )
 
@@ -2687,5 +2805,32 @@ def build_scavio_toolkit(
         def scavio_extract(input: ExtractInput, ctx: Any = None) -> dict:
             """Read any URL and get the page back as raw HTML, readability Markdown or plain text: { url, format, mode, content, content_length }. Tier-priced by mode: 'normal' and 'advanced' cost 1 credit, 'ultra' costs 2. Only a successful extraction is billed - a dead link, bot wall or timeout costs nothing."""
             return _run(lambda: client.extract(**dump(input)))
+
+    if all or enable_crawl:
+
+        @toolkit.tool()
+        def scavio_map_website(input: ExtractMapInput, ctx: Any = None) -> dict:
+            """List a website's page URLs, gathered from its sitemaps and its start page, deduplicated, filtered by path or search words and limited: { url, links: [{ url, source, lastmod }], total_found, returned, truncated }. Pages the site's robots.txt disallows are left out. Use it to find the right pages before extracting or crawling. Costs 1 credit in normal mode; advanced costs up to 2 credits and ultra up to 10, priced by what the call needed."""
+            return _run(lambda: client.extract.map(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_crawl_website(input: ExtractCrawlInput, ctx: Any = None) -> dict:
+            """Crawl a website from one start URL: same-site pages are discovered and extracted breadth-first within the page, depth and path limits, each returned as Markdown, text or HTML. Pages the site's robots.txt disallows are skipped. Waits up to wait_seconds (default 45) and returns { id, status, pages, credits_used, results, next_cursor }; if status is still queued or running, call SCAVIO_CRAWL_STATUS with the id later. Billed per SUCCESSFUL page at extract's price for the mode: normal and advanced 1 credit, ultra 2 credits. Failed and skipped pages are free, and if the balance runs out the crawl stops cleanly."""
+            return _run(lambda: _start_job(client.extract.crawl, client.extract.crawl_status, input.model_dump()))
+
+        @toolkit.tool()
+        def scavio_crawl_status(input: ExtractJobStatusInput, ctx: Any = None) -> dict:
+            """Read a crawl's progress and its page results by job id, paged by cursor: { status, stopped_reason, pages, credits_used, results: [{ url, status, content }], next_cursor }. Results are kept for 3 days after the crawl finishes. Free: costs 0 credits."""
+            return _run(lambda: _job_status(client.extract.crawl_status, input))
+
+        @toolkit.tool()
+        def scavio_batch_extract(input: ExtractBatchInput, ctx: Any = None) -> dict:
+            """Extract a list of URLs (up to 1,000, plan-limited) in one job, each returned as Markdown, text or HTML exactly like SCAVIO_EXTRACT, results in input order. Waits up to wait_seconds (default 45) and returns { id, status, pages, credits_used, results, next_cursor }; if status is still queued or running, call SCAVIO_BATCH_STATUS with the id later. Billed per SUCCESSFUL page at extract's price for the mode: normal and advanced 1 credit, ultra 2 credits. Failed pages and invalid URLs are free."""
+            return _run(lambda: _start_job(client.extract.batch, client.extract.batch_status, input.model_dump()))
+
+        @toolkit.tool()
+        def scavio_batch_status(input: ExtractJobStatusInput, ctx: Any = None) -> dict:
+            """Read a batch extract's progress and its page results by job id, in input order, paged by cursor: { status, pages, credits_used, results: [{ url, status, content }], next_cursor }. Results are kept for 3 days after the batch finishes. Free: costs 0 credits."""
+            return _run(lambda: _job_status(client.extract.batch_status, input))
 
     return toolkit
