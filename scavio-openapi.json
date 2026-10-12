@@ -28918,7 +28918,7 @@
                       "price_low",
                       "price_high"
                     ],
-                    "description": "Result sort order. Defaults to 'best_match'. eBay's 'Distance: nearest first' is deliberately unsupported (it ranks against our proxy exit, not the caller)."
+                    "description": "Result sort order. Defaults to 'best_match'. eBay's 'Distance: nearest first' is deliberately unsupported (it would not rank by the location of the caller)."
                   },
                   "min_price": {
                     "type": "number",
@@ -32189,7 +32189,7 @@
                   },
                   "currency": {
                     "type": "string",
-                    "description": "ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Booking prices off the proxy exit and identical requests disagree."
+                    "description": "ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Booking picks a currency itself and identical requests can disagree."
                   }
                 }
               }
@@ -32437,7 +32437,7 @@
                   },
                   "currency": {
                     "type": "string",
-                    "description": "ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Booking prices off the proxy exit and identical requests disagree."
+                    "description": "ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Booking picks a currency itself and identical requests can disagree."
                   }
                 },
                 "required": [
@@ -34848,7 +34848,7 @@
                   },
                   "currency": {
                     "type": "string",
-                    "description": "ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Airbnb prices off the proxy exit and identical requests disagree."
+                    "description": "ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Airbnb picks a currency itself and identical requests can disagree."
                   },
                   "page": {
                     "type": "integer",
@@ -36001,7 +36001,7 @@
                 "properties": {
                   "employer_id": {
                     "type": "string",
-                    "description": "Glassdoor employer id (1-50 characters): '1699', 'E1699' or 'IE1699'. Must be a STRING - a JSON number is rejected. Addressing by id costs two upstream fetches; the customer price is unchanged."
+                    "description": "Glassdoor employer id (1-50 characters): '1699', 'E1699' or 'IE1699'. Must be a STRING - a JSON number is rejected. Addressing by id takes an extra lookup; the customer price is unchanged."
                   },
                   "company": {
                     "type": "string",
@@ -36248,7 +36248,7 @@
                 "properties": {
                   "employer_id": {
                     "type": "string",
-                    "description": "Glassdoor employer id (1-50 characters): '1699', 'E1699' or 'IE1699'. Must be a STRING - a JSON number is rejected. Addressing by id costs two upstream fetches; the customer price is unchanged."
+                    "description": "Glassdoor employer id (1-50 characters): '1699', 'E1699' or 'IE1699'. Must be a STRING - a JSON number is rejected. Addressing by id takes an extra lookup; the customer price is unchanged."
                   },
                   "company": {
                     "type": "string",
@@ -36481,7 +36481,7 @@
                   },
                   "location": {
                     "type": "string",
-                    "description": "Where to look (1-200 characters): city and region, a full address, or a postcode. Effectively required - Yelp geolocates a location-less search off the proxy exit, so the same request answers about a different metro run to run."
+                    "description": "Where to look (1-200 characters): city and region, a full address, or a postcode. Effectively required - without it Yelp picks a location itself, so the same request can answer about a different metro run to run."
                   },
                   "page": {
                     "type": "integer",
@@ -44677,7 +44677,7 @@
                       "advanced",
                       "ultra"
                     ],
-                    "description": "Fetch tier, and the price-bearing parameter: 'normal' plain datacenter fetch (1 credit), 'advanced' full browser render (1 credit), 'ultra' the hardest-target tier (2 credits). Server default 'normal'."
+                    "description": "Fetch tier, and the price-bearing parameter: 'normal' the standard fetch (1 credit), 'advanced' renders JavaScript (1 credit), 'ultra' for the hardest pages (2 credits). Server default 'normal'."
                   }
                 },
                 "required": [

@@ -37,7 +37,7 @@ Scavio is a single Search API over 31 platforms -- Google, YouTube, Amazon, Walm
 > wrong page. Google responses are also FLAT: there is no `data` wrapper, and
 > results are `organic_results[]` with `link` and `snippet`.
 
-> **Amazon changed (breaking).** The upstream provider moved in 2026-07:
+> **Amazon changed (breaking).** The Amazon endpoint changed in 2026-07:
 > `domain` is replaced by `country`, a two-letter marketplace code (`us`, `gb`
 > -- the UK is `gb`, not `uk` -- `de`, `jp`, ...), and `sort_by`, `pages`,
 > `category_id`, `merchant_id`, `language`, `currency`, `device`, `zip_code`

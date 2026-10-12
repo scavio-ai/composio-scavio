@@ -391,7 +391,7 @@ def test_tiktok_shop_tools_register(monkeypatch):
 
 
 def test_walmart_covers_all_seven_endpoints_on_the_live_surface(monkeypatch):
-    """The scrape.do rebuild dropped device/delivery_zip/store_id and renamed start_page."""
+    """The Walmart rebuild dropped device/delivery_zip/store_id and renamed start_page."""
     toolkit = _only(monkeypatch, "walmart")
     slugs = {t.slug for t in toolkit.tools}
     assert slugs == {

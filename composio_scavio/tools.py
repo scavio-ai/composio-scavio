@@ -347,7 +347,7 @@ class AmazonOptionsInput(BaseModel):
 
 # Walmart
 # Rebuilt on the live 0.15.0 surface: device, delivery_zip and store_id never
-# existed on the scrape.do rebuild and are gone, `page` replaces start_page, and
+# existed after the Walmart rebuild and are gone, `page` replaces start_page, and
 # the five endpoints beyond search/product are exposed for the first time.
 class WalmartSearchInput(BaseModel):
     query: str = Field(description="Product search query (1-500 characters).")
@@ -1009,7 +1009,7 @@ class EbaySearchInput(BaseModel):
     query: Optional[str] = Field(None, description="Keyword to search (1-500 characters). Optional: a seller-only search pages that seller's whole catalogue.")
     seller: Optional[str] = Field(None, description="Restrict results to one seller's listings (1-64 characters), as in ebay.com/usr/<name>. Can be sent with no query.")
     page: Optional[int] = Field(None, description="Results page, 1-based.")
-    sort_by: Optional[str] = Field(None, description="Result sort order. Defaults to 'best_match'. eBay's 'Distance: nearest first' is deliberately unsupported (it ranks against our proxy exit, not the caller). Accepted values: 'best_match', 'ending_soonest', 'newly_listed', 'price_low', 'price_high'.")
+    sort_by: Optional[str] = Field(None, description="Result sort order. Defaults to 'best_match'. eBay's 'Distance: nearest first' is deliberately unsupported (it would not rank by the location of the caller). Accepted values: 'best_match', 'ending_soonest', 'newly_listed', 'price_low', 'price_high'.")
     min_price: Optional[float] = Field(None, description="Minimum price, inclusive. Must be 0 or greater.")
     max_price: Optional[float] = Field(None, description="Maximum price, inclusive. Must be 0 or greater.")
     condition: Optional[str] = Field(None, description="Item condition filter. 'refurbished' is eBay's parent condition, not one of its three graded tiers. Accepted values: 'new', 'open_box', 'refurbished', 'used', 'for_parts'.")
@@ -1135,7 +1135,7 @@ class BookingSearchInput(BaseModel):
     adults: Optional[int] = Field(None, description="Adult guests, >= 1 (default 2).")
     children_ages: Optional[list[int]] = Field(None, description="AGES of accompanying children, each 0-17, max 10 entries. Ages, not a count.")
     rooms: Optional[int] = Field(None, description="Rooms required, >= 1 (default 1).")
-    currency: Optional[str] = Field(None, description="ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Booking prices off the proxy exit and identical requests disagree.")
+    currency: Optional[str] = Field(None, description="ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Booking picks a currency itself and identical requests can disagree.")
 
 
 class BookingHotelInput(BaseModel):
@@ -1146,7 +1146,7 @@ class BookingHotelInput(BaseModel):
     adults: Optional[int] = Field(None, description="Adult guests, >= 1 (default 2).")
     children_ages: Optional[list[int]] = Field(None, description="AGES of accompanying children, each 0-17, max 10 entries. Ages, not a count.")
     rooms: Optional[int] = Field(None, description="Rooms required, >= 1 (default 1).")
-    currency: Optional[str] = Field(None, description="ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Booking prices off the proxy exit and identical requests disagree.")
+    currency: Optional[str] = Field(None, description="ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Booking picks a currency itself and identical requests can disagree.")
 
 
 class BookingReviewsInput(BaseModel):
@@ -1233,7 +1233,7 @@ class AirbnbSearchInput(BaseModel):
     guest_favorite: Optional[bool] = Field(None, description="Guest Favorite listings only.")
     free_cancellation: Optional[bool] = Field(None, description="Listings with free cancellation only.")
     amenities: Optional[str] = Field(None, description="Comma-separated amenities (1-200 characters): wifi, air_conditioning, pool, kitchen, free_parking, washer, self_check_in, tv, or raw numeric Airbnb amenity ids. An unrecognised NAME is rejected before the scrape.")
-    currency: Optional[str] = Field(None, description="ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Airbnb prices off the proxy exit and identical requests disagree.")
+    currency: Optional[str] = Field(None, description="ISO 4217 currency for prices, 3 letters (default 'USD'). Without it Airbnb picks a currency itself and identical requests can disagree.")
     page: Optional[int] = Field(None, description="Results page, 1-based. 18 listings per page. Cannot be combined with cursor.")
     cursor: Optional[str] = Field(None, description="next_cursor from a previous response (1-500 characters); wins over page, so sending both is rejected.")
 
@@ -1268,7 +1268,7 @@ class GlassdoorCompanyInput(BaseModel):
 
 
 class GlassdoorReviewsInput(BaseModel):
-    employer_id: Optional[str] = Field(None, description="Glassdoor employer id (1-50 characters): '1699', 'E1699' or 'IE1699'. Must be a STRING - a JSON number is rejected. Addressing by id costs two upstream fetches; the customer price is unchanged.")
+    employer_id: Optional[str] = Field(None, description="Glassdoor employer id (1-50 characters): '1699', 'E1699' or 'IE1699'. Must be a STRING - a JSON number is rejected. Addressing by id takes an extra lookup; the customer price is unchanged.")
     company: Optional[str] = Field(None, description="Employer name as it appears in a Glassdoor slug (1-200 characters). COSMETIC: ignored when url is set, and it does not satisfy the employer_id-or-url requirement.")
     url: Optional[str] = Field(None, description="Any glassdoor.com employer URL (1-500 characters). Pass back reviews_url from company() to skip the resolve fetch. A non-glassdoor.com host is rejected.")
     category: Optional[str] = Field(None, description="Restrict to reviews Glassdoor files under one topic. Closed enum: Glassdoor IGNORES an unknown value and serves the unfiltered set under a 200. Read filtered_review_count on the response to see how many match. Accepted values: 'career_development', 'compensation', 'culture', 'diversity_and_inclusion', 'management', 'work_life_balance'.")
@@ -1276,7 +1276,7 @@ class GlassdoorReviewsInput(BaseModel):
 
 
 class GlassdoorSalariesInput(BaseModel):
-    employer_id: Optional[str] = Field(None, description="Glassdoor employer id (1-50 characters): '1699', 'E1699' or 'IE1699'. Must be a STRING - a JSON number is rejected. Addressing by id costs two upstream fetches; the customer price is unchanged.")
+    employer_id: Optional[str] = Field(None, description="Glassdoor employer id (1-50 characters): '1699', 'E1699' or 'IE1699'. Must be a STRING - a JSON number is rejected. Addressing by id takes an extra lookup; the customer price is unchanged.")
     company: Optional[str] = Field(None, description="Employer name as it appears in a Glassdoor slug (1-200 characters). COSMETIC: ignored when url is set, and it does not satisfy the employer_id-or-url requirement.")
     url: Optional[str] = Field(None, description="Any glassdoor.com employer URL (1-500 characters). Pass back salaries_url from company() to skip the resolve fetch. A non-glassdoor.com host is rejected.")
     page: Optional[int] = Field(None, description="Results page, 1-based. Ten job titles per page; page_count on the response is how many pages exist.")
@@ -1285,7 +1285,7 @@ class GlassdoorSalariesInput(BaseModel):
 # Yelp
 class YelpSearchInput(BaseModel):
     term: Optional[str] = Field(None, description="What to look for (1-200 characters): a category ('plumbers'), a dish, or a business name. Required together with location unless url is given.")
-    location: Optional[str] = Field(None, description="Where to look (1-200 characters): city and region, a full address, or a postcode. Effectively required - Yelp geolocates a location-less search off the proxy exit, so the same request answers about a different metro run to run.")
+    location: Optional[str] = Field(None, description="Where to look (1-200 characters): city and region, a full address, or a postcode. Effectively required - without it Yelp picks a location itself, so the same request can answer about a different metro run to run.")
     page: Optional[int] = Field(None, description="Results page, 1-based. Yelp fixes the page size at 10.")
     sort: Optional[str] = Field(None, description="Result ordering (upstream default 'recommended'). Closed enum: Yelp IGNORES an unrecognised sortby and serves default ranking under a 200, billing a premium scrape for a sort that never ran. Accepted values: 'recommended', 'rating', 'review_count'.")
     price: Optional[list[int]] = Field(None, description="Price bands to include, 1 ($) to 4 ($$$$); 1-4 values, combined freely - [1, 2] means $ or $$. Accepted values: 1, 2, 3, 4.")
