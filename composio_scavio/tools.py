@@ -2129,62 +2129,62 @@ def build_scavio_toolkit(
 
         @toolkit.tool()
         def scavio_instagram_profile(input: InstagramProfileInput, ctx: Any = None) -> dict:
-            """Fetch an Instagram profile by username or user id. Costs 10 credits."""
+            """Fetch an Instagram profile by username or user id. Costs 1 credit."""
             return _run(lambda: client.instagram.profile(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_posts(input: InstagramUserPostsInput, ctx: Any = None) -> dict:
-            """List an Instagram user's posts. Costs 2 credits, the cheapest Instagram endpoint."""
+            """List an Instagram user's posts. Costs 2 credits per page."""
             return _run(lambda: client.instagram.user_posts(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_reels(input: InstagramUserReelsInput, ctx: Any = None) -> dict:
-            """List an Instagram user's reels. Costs 10 credits."""
+            """List an Instagram user's reels. Costs 1 credit (2 the first time a username is looked up)."""
             return _run(lambda: client.instagram.user_reels(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_tagged(input: InstagramUserTaggedInput, ctx: Any = None) -> dict:
-            """List posts an Instagram user is tagged in. Costs 10 credits."""
+            """List posts an Instagram user is tagged in. Costs 1 credit (2 the first time a username is looked up)."""
             return _run(lambda: client.instagram.user_tagged(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_stories(input: InstagramUserStoriesInput, ctx: Any = None) -> dict:
-            """Fetch an Instagram user's current stories. Costs 10 credits."""
+            """Fetch an Instagram user's current stories. Costs 2 credits."""
             return _run(lambda: client.instagram.user_stories(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_post(input: InstagramPostInput, ctx: Any = None) -> dict:
-            """Fetch an Instagram post by URL, media id, or shortcode. Costs 8 credits."""
+            """Fetch an Instagram post by URL, media id, or shortcode. Costs 2 credits."""
             return _run(lambda: client.instagram.post(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_post_comments(input: InstagramPostCommentsInput, ctx: Any = None) -> dict:
-            """List comments on an Instagram post by shortcode or URL. Costs 10 credits."""
+            """List comments on an Instagram post by shortcode or URL. Costs 2 credits per page."""
             return _run(lambda: client.instagram.post_comments(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_comment_replies(input: InstagramCommentRepliesInput, ctx: Any = None) -> dict:
-            """List replies to an Instagram post comment. Costs 8 credits."""
+            """List replies to an Instagram post comment. Costs 2 credits."""
             return _run(lambda: client.instagram.comment_replies(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_search_users(input: InstagramSearchUsersInput, ctx: Any = None) -> dict:
-            """Search Instagram users by keyword. Costs 10 credits."""
+            """Search Instagram users by keyword. Costs 2 credits; a request with a cursor costs 8."""
             return _run(lambda: client.instagram.search_users(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_search_hashtags(input: InstagramSearchHashtagsInput, ctx: Any = None) -> dict:
-            """Search Instagram hashtags by keyword. Costs 10 credits."""
+            """Search Instagram hashtags by keyword. Costs 2 credits; a request with a cursor costs 8."""
             return _run(lambda: client.instagram.search_hashtags(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_followers(input: InstagramUserFollowersInput, ctx: Any = None) -> dict:
-            """List an Instagram user's followers. Costs 10 credits."""
+            """List an Instagram user's followers. Costs 2 credits per page."""
             return _run(lambda: client.instagram.user_followers(**dump(input)))
 
         @toolkit.tool()
         def scavio_instagram_user_followings(input: InstagramUserFollowingsInput, ctx: Any = None) -> dict:
-            """List the accounts an Instagram user follows. Costs 10 credits."""
+            """List the accounts an Instagram user follows. Costs 2 credits per page."""
             return _run(lambda: client.instagram.user_followings(**dump(input)))
 
     if all or enable_tiktok_shop:
