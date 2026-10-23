@@ -2,7 +2,7 @@
 
 [Scavio](https://scavio.dev) real-time search tools for [Composio](https://composio.dev).
 
-Scavio is a single Search API over 31 platforms -- Google, YouTube, Amazon, Walmart, eBay, Target, Home Depot, Reddit, TikTok, TikTok Shop, Instagram, X, LinkedIn, Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, Tripadvisor, Yelp, Indeed, Glassdoor, the Apple App Store, Google Play, SEC EDGAR, Companies House, G2, Capterra, Google Ads Transparency and the Meta Ad Library -- plus `extract`, which reads any URL as Markdown, plain text or raw HTML, and the website tools that map a site's URLs, crawl a whole site, or extract a list of pages in one job. This package exposes **194 tools covering every live Scavio endpoint** as a Composio custom toolkit, so your agents can pull structured, up-to-date results across any Composio-supported framework (OpenAI, Anthropic, LangChain, CrewAI, and more).
+Scavio is a single Search API over 31 platforms -- Google, YouTube, Amazon, Walmart, eBay, Target, Home Depot, Reddit, TikTok, TikTok Shop, Instagram, X, LinkedIn, Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, Tripadvisor, Yelp, Indeed, Glassdoor, the Apple App Store, Google Play, SEC EDGAR, Companies House, G2, Capterra, Google Ads Transparency and the Meta Ad Library -- plus `extract`, which reads any URL as Markdown, plain text or raw HTML, and the website tools that map a site's URLs, crawl a whole site, or extract a list of pages in one job. This package exposes **195 tools covering every live Scavio endpoint** as a Composio custom toolkit, so your agents can pull structured, up-to-date results across any Composio-supported framework (OpenAI, Anthropic, LangChain, CrewAI, and more).
 
 > **New in 0.5.0: map, crawl and batch (opt-in).** `enable_crawl=True` adds
 > `SCAVIO_MAP_WEBSITE`, `SCAVIO_CRAWL_WEBSITE`, `SCAVIO_CRAWL_STATUS`,
@@ -157,7 +157,7 @@ Growth 10,000/10/1,000. Webhooks, idempotency keys and cancellation are on the
 
 ## Tools
 
-194 tools, all namespaced under the `SCAVIO` toolkit. Each provider is gated by an `enable_*` flag. **On by default** are the ten original platforms and `extract` (104 tools); the 21 platforms and the 5 website tools marked opt-in are off unless you pass their flag or `all=True`.
+195 tools, all namespaced under the `SCAVIO` toolkit. Each provider is gated by an `enable_*` flag. **On by default** are the ten original platforms and `extract` (104 tools); the 21 platforms and the 5 website tools marked opt-in are off unless you pass their flag or `all=True`.
 
 ### On by default
 
@@ -182,7 +182,7 @@ Growth 10,000/10/1,000. Webhooks, idempotency keys and cancellation are on the
 | Threads | `enable_threads` | 6 | `SCAVIO_THREADS_PROFILE`, `SCAVIO_THREADS_USER_POSTS`, `SCAVIO_THREADS_USER_REPLIES`, `SCAVIO_THREADS_POST`, `SCAVIO_THREADS_POST_COMMENTS`, `SCAVIO_THREADS_SEARCH_USERS` |
 | Kuaishou (China) | `enable_kuaishou` | 14 | `SCAVIO_KUAISHOU_PROFILE`, `SCAVIO_KUAISHOU_USER_POSTS`, `SCAVIO_KUAISHOU_USER_LIVE`, `SCAVIO_KUAISHOU_USER_RESOLVE`, `SCAVIO_KUAISHOU_VIDEO`, `SCAVIO_KUAISHOU_VIDEO_COMMENTS`, `SCAVIO_KUAISHOU_COMMENT_REPLIES`, `SCAVIO_KUAISHOU_VIDEOS_BATCH`, `SCAVIO_KUAISHOU_SEARCH`, `SCAVIO_KUAISHOU_SEARCH_VIDEOS`, `SCAVIO_KUAISHOU_SEARCH_USERS`, `SCAVIO_KUAISHOU_SEARCH_LIVE`, `SCAVIO_KUAISHOU_TAG_FEED`, `SCAVIO_KUAISHOU_TRENDING` |
 | eBay | `enable_ebay` | 3 | `SCAVIO_EBAY_SEARCH`, `SCAVIO_EBAY_PRODUCT`, `SCAVIO_EBAY_SELLER` |
-| Target | `enable_target` | 4 | `SCAVIO_TARGET_SEARCH`, `SCAVIO_TARGET_CATEGORY`, `SCAVIO_TARGET_PRODUCT`, `SCAVIO_TARGET_REVIEWS` |
+| Target | `enable_target` | 5 | `SCAVIO_TARGET_SEARCH`, `SCAVIO_TARGET_CATEGORY`, `SCAVIO_TARGET_PRODUCT`, `SCAVIO_TARGET_REVIEWS`, `SCAVIO_TARGET_AVAILABILITY` |
 | Home Depot | `enable_home_depot` | 3 | `SCAVIO_HOME_DEPOT_SEARCH`, `SCAVIO_HOME_DEPOT_PRODUCT`, `SCAVIO_HOME_DEPOT_REVIEWS` |
 | Zillow | `enable_zillow` | 3 | `SCAVIO_ZILLOW_SEARCH`, `SCAVIO_ZILLOW_PROPERTY`, `SCAVIO_ZILLOW_AGENT_REVIEWS` |
 | Booking.com | `enable_booking` | 3 | `SCAVIO_BOOKING_SEARCH`, `SCAVIO_BOOKING_HOTEL`, `SCAVIO_BOOKING_REVIEWS` |
@@ -222,7 +222,7 @@ Every tool states its cost in its own description. Flat-priced platforms:
 
 | Cost | Platforms |
 |------|-----------|
-| 1 credit | Google (14), Reddit (12), TikTok (11), TikTok Shop (8), X (11), Amazon (3 billable), eBay (3), Target (4), Zillow (3), Booking.com (3), Airbnb (3), Glassdoor (4), App Store (3), SEC EDGAR (6), Redfin (3), Companies House (4), Google Ads (3), Meta Ads (3), and the 11 remaining YouTube tools |
+| 1 credit | Google (14), Reddit (12), TikTok (11), TikTok Shop (8), X (11), Amazon (3 billable), eBay (3), Target (5), Zillow (3), Booking.com (3), Airbnb (3), Glassdoor (4), App Store (3), SEC EDGAR (6), Redfin (3), Companies House (4), Google Ads (3), Meta Ads (3), and the 11 remaining YouTube tools |
 | 2 credits | `SCAVIO_YOUTUBE_SEARCH`, `SCAVIO_YOUTUBE_SHORTS`, Home Depot (3), Tripadvisor (4), Indeed (4), Yelp (3), Google Play (3), Capterra (3) |
 | 3 credits | `SCAVIO_YOUTUBE_STREAMS` |
 | 5 credits | `SCAVIO_YOUTUBE_TRANSCRIPT`, G2 (3) |

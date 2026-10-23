@@ -7,8 +7,8 @@ schemas. Do NOT use ``backend/scripts/export-openapi.ts`` - it mounts only 8 of
 the 15 route apps and structurally cannot see Google v2, X, LinkedIn or
 TikTok Shop.
 
-Emitted surface (191 paths):
-  - 189 billable data endpoints, including the deprecated /api/v1/youtube/metadata
+Emitted surface (192 paths):
+  - 190 billable data endpoints, including the deprecated /api/v1/youtube/metadata
     alias (marked deprecated, it duplicates /api/v1/youtube/video)
   - GET /api/v1/amazon/options and GET /api/v1/usage, both free
 The 5 retired LinkedIn endpoints are deliberately omitted: they always answer
@@ -355,7 +355,7 @@ def build() -> Dict[str, Any]:
                 "Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, Tripadvisor, Yelp, Indeed, "
                 "Glassdoor, the Apple App Store, Google Play, SEC EDGAR, Companies House, G2, "
                 "Capterra, Google Ads Transparency and the Meta Ad Library - plus POST /api/v1/extract, "
-                "which reads any URL as Markdown, plain text or raw HTML. 189 billable endpoints plus "
+                "which reads any URL as Markdown, plain text or raw HTML. 190 billable endpoints plus "
                 "two free ones. Google runs on POST /api/v2/google and its 13 verticals; the v1 path "
                 "/api/v1/google was retired on 2026-08-04 and returns 410. The 5 retired LinkedIn "
                 "endpoints (person/contact, company/people, company/jobs, search/people, search/posts) "

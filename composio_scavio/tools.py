@@ -22,7 +22,7 @@ toolkit exposes every live endpoint of all of them. Build the toolkit with
 Every provider is gated by an ``enable_*`` flag so an agent only sees the tools
 it needs. The ten original platforms plus ``extract`` are on by default; the 21
 platforms added in 0.4.0 and the website tools added in 0.5.0 (map, crawl,
-batch) are OPT-IN, because handing an agent all 194 tools at once buries the
+batch) are OPT-IN, because handing an agent all 195 tools at once buries the
 ones it actually needs. Turn a vertical on explicitly::
 
     scavio = build_scavio_toolkit(enable_zillow=True, enable_redfin=True)
@@ -1034,7 +1034,7 @@ class TargetSearchInput(BaseModel):
     page: Optional[int] = Field(None, description="Results page, 1-based.")
     count: Optional[int] = Field(None, description="Results per page, 1-28. Defaults to 24; Target rejects anything above 28 outright.")
     sort: Optional[str] = Field(None, description="Result sort order. Defaults to 'relevance'. Accepted values: 'relevance', 'featured', 'price_low', 'price_high', 'rating_high', 'best_seller', 'newest'.")
-    store_id: Optional[str] = Field(None, description="Numeric Target store id whose prices and availability the response reflects. Defaults to '3991', the store target.com uses with no store context.")
+    store_id: Optional[str] = Field(None, description="Numeric Target store id whose prices the response reflects. Defaults to '3991', the store target.com uses with no store context.")
 
 
 class TargetCategoryInput(BaseModel):
@@ -1042,18 +1042,25 @@ class TargetCategoryInput(BaseModel):
     page: Optional[int] = Field(None, description="Results page, 1-based.")
     count: Optional[int] = Field(None, description="Results per page, 1-28. Defaults to 24; Target rejects anything above 28 outright.")
     sort: Optional[str] = Field(None, description="Result sort order. Defaults to 'relevance'. Accepted values: 'relevance', 'featured', 'price_low', 'price_high', 'rating_high', 'best_seller', 'newest'.")
-    store_id: Optional[str] = Field(None, description="Numeric Target store id whose prices and availability the response reflects. Defaults to '3991'.")
+    store_id: Optional[str] = Field(None, description="Numeric Target store id whose prices the response reflects. Defaults to '3991'.")
 
 
 class TargetProductInput(BaseModel):
     tcin: str = Field(description="Target catalog id (tcin, e.g. '1010453160'). A colour/size child tcin is answered by its variation parent, with the child present in 'variants'.")
-    store_id: Optional[str] = Field(None, description="Numeric Target store id whose prices and availability the response reflects. Defaults to '3991'.")
+    store_id: Optional[str] = Field(None, description="Numeric Target store id whose prices the response reflects. Defaults to '3991'.")
 
 
 class TargetReviewsInput(BaseModel):
     tcin: str = Field(description="Target catalog id (tcin, e.g. '1010453160').")
     limit: Optional[int] = Field(None, description="Trim the returned reviews to at most this many (1 or greater). Target publishes 8 anonymously and offers no paging, so this only trims.")
-    store_id: Optional[str] = Field(None, description="Numeric Target store id whose prices and availability the response reflects. Defaults to '3991'.")
+    store_id: Optional[str] = Field(None, description="Numeric Target store id whose prices the response reflects. Defaults to '3991'.")
+
+
+class TargetAvailabilityInput(BaseModel):
+    tcin: str = Field(description="Target catalog id (tcin, e.g. '85978609').")
+    zip: str = Field(description="5-digit US ZIP code to search around.")
+    radius: Optional[int] = Field(None, description="Search radius in miles, 1-100. Defaults to 25. At most 20 stores.")
+    store_id: Optional[str] = Field(None, description="Return only this Target store. It must be within radius of zip.")
 
 
 # Home Depot
@@ -1750,7 +1757,7 @@ def build_scavio_toolkit(
         enable_threads: Register the 6 Threads tools. OPT-IN, defaults to False.
         enable_kuaishou: Register the 14 Kuaishou (China) tools. OPT-IN, defaults to False.
         enable_ebay: Register the 3 eBay tools. OPT-IN, defaults to False.
-        enable_target: Register the 4 Target tools. OPT-IN, defaults to False.
+        enable_target: Register the 5 Target tools. OPT-IN, defaults to False.
         enable_home_depot: Register the 3 Home Depot tools. OPT-IN, defaults to False.
         enable_zillow: Register the 3 Zillow tools. OPT-IN, defaults to False.
         enable_booking: Register the 3 Booking.com tools. OPT-IN, defaults to False.
@@ -2474,6 +2481,11 @@ def build_scavio_toolkit(
         def scavio_target_reviews(input: TargetReviewsInput, ctx: Any = None) -> dict:
             """Target reviews with the rating breakdown, per-attribute averages and guest photos. 8 review bodies maximum and no paging; expect around 40 seconds. Costs 1 credit."""
             return _run(lambda: client.target.reviews(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_target_availability(input: TargetAvailabilityInput, ctx: Any = None) -> dict:
+            """In-store stock for a Target product at every store near a ZIP: units available, in-store, pickup, curbside and ship-to-store status, distance, address and hours. Costs 1 credit."""
+            return _run(lambda: client.target.availability(**dump(input)))
 
     if all or enable_home_depot:
 

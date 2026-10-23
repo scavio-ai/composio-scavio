@@ -36,7 +36,7 @@ _NAMESPACES = (
 _PROVIDERS = _NAMESPACES + ("extract", "crawl")
 
 # Tool count per provider, and therefore the coverage contract of this package.
-# Total = 194 = every live Scavio endpoint (189 platform + extract tools, plus the
+# Total = 195 = every live Scavio endpoint (190 platform + extract tools, plus the
 # 5 website tools: map, crawl, crawl status, batch, batch status; the deprecated
 # /youtube/metadata alias and the 5 retired LinkedIn endpoints are never
 # registered, and job cancellation is left to the SDK/REST API).
@@ -54,7 +54,7 @@ EXPECTED_COUNTS = {
     "threads": 6,
     "kuaishou": 14,
     "ebay": 3,
-    "target": 4,
+    "target": 5,
     "home_depot": 3,
     "zillow": 3,
     "booking": 3,
@@ -136,7 +136,7 @@ def _sample(annotation):
 def test_all_tools_register(monkeypatch):
     toolkit = _build(monkeypatch, all=True)
     slugs = [t.slug for t in toolkit.tools]
-    assert len(slugs) == 194, len(slugs)
+    assert len(slugs) == 195, len(slugs)
     assert len(set(slugs)) == len(slugs), "slugs must be unique"
     assert all(s.startswith("SCAVIO_") for s in slugs)
 
@@ -145,7 +145,7 @@ def test_per_provider_coverage(monkeypatch):
     """Every provider registers exactly the number of tools it has live endpoints."""
     actual = {p: len(_only(monkeypatch, p).tools) for p in _PROVIDERS}
     assert actual == EXPECTED_COUNTS
-    assert sum(actual.values()) == 194
+    assert sum(actual.values()) == 195
 
 
 def test_the_new_verticals_are_opt_in(monkeypatch):

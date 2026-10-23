@@ -3,7 +3,7 @@
   "info": {
     "title": "Scavio Search API",
     "version": "1.0.0",
-    "description": "Real-time structured search over 31 platforms - Google, YouTube, Amazon, Walmart, eBay, Target, Home Depot, Reddit, TikTok, TikTok Shop, Instagram, X, LinkedIn, Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, Tripadvisor, Yelp, Indeed, Glassdoor, the Apple App Store, Google Play, SEC EDGAR, Companies House, G2, Capterra, Google Ads Transparency and the Meta Ad Library - plus POST /api/v1/extract, which reads any URL as Markdown, plain text or raw HTML. 189 billable endpoints plus two free ones. Google runs on POST /api/v2/google and its 13 verticals; the v1 path /api/v1/google was retired on 2026-08-04 and returns 410. The 5 retired LinkedIn endpoints (person/contact, company/people, company/jobs, search/people, search/posts) always return 410 unbilled and are deliberately not listed. Every endpoint's credit cost is on the x-credits field of its operation; on the four BODY-PRICED surfaces (Walmart by domain, Threads by identifier, Kuaishou per endpoint, extract by mode) x-credits is the FLOOR and x-credits-note states what the price varies with.",
+    "description": "Real-time structured search over 31 platforms - Google, YouTube, Amazon, Walmart, eBay, Target, Home Depot, Reddit, TikTok, TikTok Shop, Instagram, X, LinkedIn, Threads, Kuaishou, Zillow, Redfin, Booking.com, Airbnb, Tripadvisor, Yelp, Indeed, Glassdoor, the Apple App Store, Google Play, SEC EDGAR, Companies House, G2, Capterra, Google Ads Transparency and the Meta Ad Library - plus POST /api/v1/extract, which reads any URL as Markdown, plain text or raw HTML. 190 billable endpoints plus two free ones. Google runs on POST /api/v2/google and its 13 verticals; the v1 path /api/v1/google was retired on 2026-08-04 and returns 410. The 5 retired LinkedIn endpoints (person/contact, company/people, company/jobs, search/people, search/posts) always return 410 unbilled and are deliberately not listed. Every endpoint's credit cost is on the x-credits field of its operation; on the four BODY-PRICED surfaces (Walmart by domain, Threads by identifier, Kuaishou per endpoint, extract by mode) x-credits is the FLOOR and x-credits-note states what the price varies with.",
     "contact": {
       "name": "Scavio",
       "url": "https://scavio.dev",
@@ -29649,7 +29649,7 @@
                   },
                   "store_id": {
                     "type": "string",
-                    "description": "Numeric Target store id whose prices and availability the response reflects. Defaults to '3991', the store target.com uses with no store context."
+                    "description": "Numeric Target store id whose prices the response reflects. Defaults to '3991', the store target.com uses with no store context."
                   }
                 },
                 "required": [
@@ -29894,7 +29894,7 @@
                   },
                   "store_id": {
                     "type": "string",
-                    "description": "Numeric Target store id whose prices and availability the response reflects. Defaults to '3991'."
+                    "description": "Numeric Target store id whose prices the response reflects. Defaults to '3991'."
                   }
                 },
                 "required": [
@@ -30118,7 +30118,7 @@
                   },
                   "store_id": {
                     "type": "string",
-                    "description": "Numeric Target store id whose prices and availability the response reflects. Defaults to '3991'."
+                    "description": "Numeric Target store id whose prices the response reflects. Defaults to '3991'."
                   }
                 },
                 "required": [
@@ -30346,7 +30346,7 @@
                   },
                   "store_id": {
                     "type": "string",
-                    "description": "Numeric Target store id whose prices and availability the response reflects. Defaults to '3991'."
+                    "description": "Numeric Target store id whose prices the response reflects. Defaults to '3991'."
                   }
                 },
                 "required": [
@@ -30359,6 +30359,239 @@
         "responses": {
           "200": {
             "description": "Target reviews with the rating breakdown, per-attribute averages and guest photos. 8 review bodies maximum and no paging; expect around 40 seconds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "description": "The endpoint payload."
+                    },
+                    "response_time": {
+                      "type": "number"
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "response_time"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Out of credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate, concurrency or usage limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream data source unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/target/availability": {
+      "post": {
+        "operationId": "target_availability",
+        "tags": [
+          "Target"
+        ],
+        "summary": "In-store stock for a Target product at every store near a ZIP: units available, in-store, pickup, curbside and ship-to-store status, distance, address and hours.",
+        "description": "In-store stock for a Target product at every store near a ZIP: units available, in-store, pickup, curbside and ship-to-store status, distance, address and hours. Costs 1 credit.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "x-credits": 1,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tcin": {
+                    "type": "string",
+                    "description": "Target catalog id (tcin, e.g. '85978609')."
+                  },
+                  "zip": {
+                    "type": "string",
+                    "description": "5-digit US ZIP code to search around."
+                  },
+                  "radius": {
+                    "type": "integer",
+                    "description": "Search radius in miles, 1-100. Defaults to 25. At most 20 stores."
+                  },
+                  "store_id": {
+                    "type": "string",
+                    "description": "Return only this Target store. It must be within radius of zip."
+                  }
+                },
+                "required": [
+                  "tcin",
+                  "zip"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "In-store stock for a Target product at every store near a ZIP: units available, in-store, pickup, curbside and ship-to-store status, distance, address and hours.",
             "content": {
               "application/json": {
                 "schema": {
