@@ -1560,6 +1560,36 @@ class MetaAdsAdInput(BaseModel):
     ad_archive_id: str = Field(description="Meta ad archive id (3-25 digits, as a string).")
 
 
+# HEB
+class HebSearchInput(BaseModel):
+    query: str = Field(description="Search keyword (1-500 characters).")
+    page: Optional[int] = Field(None, description="Results page, 1-based.")
+    page_size: Optional[int] = Field(None, description="Results per page, 1-60. Defaults to 30; values above 60 are rejected.")
+
+
+class HebProductInput(BaseModel):
+    product_url: Optional[str] = Field(None, description="Full heb.com product URL (preferred). Provide this, or product_id together with slug.")
+    product_id: Optional[str] = Field(None, description="HEB product id. Requires slug when used.")
+    slug: Optional[str] = Field(None, description="Product URL slug. Required together with product_id.")
+
+
+class HebStoresInput(BaseModel):
+    zip: Optional[str] = Field(None, description="5-digit US ZIP code. Provide this or city.")
+    city: Optional[str] = Field(None, description="City name to search for HEB stores. Provide this or zip.")
+
+
+# Kroger
+class KrogerSearchInput(BaseModel):
+    query: str = Field(description="Search keyword (1-500 characters).")
+    page: Optional[int] = Field(None, description="Results page, 1-based.")
+
+
+class KrogerProductInput(BaseModel):
+    product_url: Optional[str] = Field(None, description="Full kroger.com product URL (preferred). Provide this, or upc, or slug.")
+    upc: Optional[str] = Field(None, description="Product UPC code.")
+    slug: Optional[str] = Field(None, description="Product URL slug.")
+
+
 # Extract is a CORE endpoint, not a platform: it is the top-level
 # client.extract(url, format=, mode=), never client.extract.extract().
 class ExtractInput(BaseModel):
@@ -1721,6 +1751,8 @@ def build_scavio_toolkit(
     enable_capterra: bool = False,
     enable_google_ads: bool = False,
     enable_meta_ads: bool = False,
+    enable_heb: bool = False,
+    enable_kroger: bool = False,
     enable_crawl: bool = False,
     all: bool = False,
 ) -> "ExperimentalToolkit":
@@ -1775,6 +1807,8 @@ def build_scavio_toolkit(
         enable_capterra: Register the 3 Capterra Software Reviews tools. OPT-IN, defaults to False.
         enable_google_ads: Register the 3 Google Ads Transparency tools. OPT-IN, defaults to False.
         enable_meta_ads: Register the 3 Meta Ad Library tools. OPT-IN, defaults to False.
+        enable_heb: Register the 3 HEB grocery tools. OPT-IN, defaults to False.
+        enable_kroger: Register the 2 Kroger grocery tools. OPT-IN, defaults to False.
         enable_crawl: Register the 5 website tools of the Extract family: map a
             site's URLs, crawl a site, read a crawl's status, batch-extract a URL
             list, read a batch's status. OPT-IN, defaults to False, because a
@@ -2504,6 +2538,35 @@ def build_scavio_toolkit(
             """One page of full Home Depot review bodies, the rating distribution, per-attribute ratings, photos and seller responses. 30 reviews per page. Costs 2 credits."""
             return _run(lambda: client.home_depot.reviews(**dump(input)))
 
+    if all or enable_heb:
+
+        @toolkit.tool()
+        def scavio_heb_search(input: HEBSearchInput, ctx: Any = None) -> dict:
+            """Search HEB grocery products by keyword: price (cents), sale status, unit price, size, UPC, stock, EBT/SNAP eligibility, aisle location and product URL. Costs 2 credits."""
+            return _run(lambda: client.heb.search(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_heb_product(input: HEBProductInput, ctx: Any = None) -> dict:
+            """Full HEB product detail: nutrition facts, ingredients, description, images, similar products, coupons, EBT/SNAP eligibility and breadcrumbs. Pass product_url (from search) or slug + product_id. Costs 2 credits."""
+            return _run(lambda: client.heb.product(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_heb_stores(input: HEBStoresInput, ctx: Any = None) -> dict:
+            """HEB stores near a US ZIP code or city: store number, address, phone, hours, pharmacy availability, fulfillment channels, distance and store URL. Costs 2 credits."""
+            return _run(lambda: client.heb.stores(**dump(input)))
+
+    if all or enable_kroger:
+
+        @toolkit.tool()
+        def scavio_kroger_search(input: KrogerSearchInput, ctx: Any = None) -> dict:
+            """Search Kroger grocery products by keyword: price (cents), promo/n-for deals, unit price, UPC, stock, SNAP eligibility, dietary info, rating and category. Kroger operates Kroger, Ralphs, Fred Meyer, Harris Teeter, King Soopers, Fry's and other banners. Costs 2 credits."""
+            return _run(lambda: client.kroger.search(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_kroger_product(input: KrogerProductInput, ctx: Any = None) -> dict:
+            """Full Kroger product detail: nutrition facts with allergens and ingredients, rating distribution, store aisle location, dietary flags (organic, non-GMO, gluten-free), SNAP eligibility, dimensions and country of origin. Pass product_url (from search) or upc. Costs 2 credits."""
+            return _run(lambda: client.kroger.product(**dump(input)))
+
     if all or enable_zillow:
 
         @toolkit.tool()
@@ -2810,6 +2873,35 @@ def build_scavio_toolkit(
         def scavio_meta_ads_ad(input: MetaAdsAdInput, ctx: Any = None) -> dict:
             """One Meta ad in full by archive id: creative, advertiser, run dates, the platforms it ran on, and the political disclosure when the ad carries one. Commercial ads leave spend, reach and impressions null. Costs 1 credit."""
             return _run(lambda: client.meta_ads.ad(**dump(input)))
+
+    if all or enable_heb:
+
+        @toolkit.tool()
+        def scavio_heb_search(input: HebSearchInput, ctx: Any = None) -> dict:
+            """Search HEB grocery products by keyword. Costs 2 credits."""
+            return _run(lambda: client.heb.search(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_heb_product(input: HebProductInput, ctx: Any = None) -> dict:
+            """Get detailed HEB product information by URL, product ID, or slug. Costs 2 credits."""
+            return _run(lambda: client.heb.product(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_heb_stores(input: HebStoresInput, ctx: Any = None) -> dict:
+            """Find HEB store locations by ZIP code or city. Costs 2 credits."""
+            return _run(lambda: client.heb.stores(**dump(input)))
+
+    if all or enable_kroger:
+
+        @toolkit.tool()
+        def scavio_kroger_search(input: KrogerSearchInput, ctx: Any = None) -> dict:
+            """Search Kroger grocery products by keyword. Kroger operates Kroger, Ralphs, Fred Meyer, Harris Teeter, King Soopers, Fry's and other banners. Costs 2 credits."""
+            return _run(lambda: client.kroger.search(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_kroger_product(input: KrogerProductInput, ctx: Any = None) -> dict:
+            """Get detailed Kroger product information by URL, UPC, or slug. Costs 2 credits."""
+            return _run(lambda: client.kroger.product(**dump(input)))
 
     if all or enable_extract:
 
