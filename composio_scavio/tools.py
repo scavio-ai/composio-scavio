@@ -2541,17 +2541,17 @@ def build_scavio_toolkit(
     if all or enable_heb:
 
         @toolkit.tool()
-        def scavio_heb_search(input: HEBSearchInput, ctx: Any = None) -> dict:
+        def scavio_heb_search(input: HebSearchInput, ctx: Any = None) -> dict:
             """Search HEB grocery products by keyword: price (cents), sale status, unit price, size, UPC, stock, EBT/SNAP eligibility, aisle location and product URL. Costs 2 credits."""
             return _run(lambda: client.heb.search(**dump(input)))
 
         @toolkit.tool()
-        def scavio_heb_product(input: HEBProductInput, ctx: Any = None) -> dict:
+        def scavio_heb_product(input: HebProductInput, ctx: Any = None) -> dict:
             """Full HEB product detail: nutrition facts, ingredients, description, images, similar products, coupons, EBT/SNAP eligibility and breadcrumbs. Pass product_url (from search) or slug + product_id. Costs 2 credits."""
             return _run(lambda: client.heb.product(**dump(input)))
 
         @toolkit.tool()
-        def scavio_heb_stores(input: HEBStoresInput, ctx: Any = None) -> dict:
+        def scavio_heb_stores(input: HebStoresInput, ctx: Any = None) -> dict:
             """HEB stores near a US ZIP code or city: store number, address, phone, hours, pharmacy availability, fulfillment channels, distance and store URL. Costs 2 credits."""
             return _run(lambda: client.heb.stores(**dump(input)))
 
@@ -2873,35 +2873,6 @@ def build_scavio_toolkit(
         def scavio_meta_ads_ad(input: MetaAdsAdInput, ctx: Any = None) -> dict:
             """One Meta ad in full by archive id: creative, advertiser, run dates, the platforms it ran on, and the political disclosure when the ad carries one. Commercial ads leave spend, reach and impressions null. Costs 1 credit."""
             return _run(lambda: client.meta_ads.ad(**dump(input)))
-
-    if all or enable_heb:
-
-        @toolkit.tool()
-        def scavio_heb_search(input: HebSearchInput, ctx: Any = None) -> dict:
-            """Search HEB grocery products by keyword. Costs 2 credits."""
-            return _run(lambda: client.heb.search(**dump(input)))
-
-        @toolkit.tool()
-        def scavio_heb_product(input: HebProductInput, ctx: Any = None) -> dict:
-            """Get detailed HEB product information by URL, product ID, or slug. Costs 2 credits."""
-            return _run(lambda: client.heb.product(**dump(input)))
-
-        @toolkit.tool()
-        def scavio_heb_stores(input: HebStoresInput, ctx: Any = None) -> dict:
-            """Find HEB store locations by ZIP code or city. Costs 2 credits."""
-            return _run(lambda: client.heb.stores(**dump(input)))
-
-    if all or enable_kroger:
-
-        @toolkit.tool()
-        def scavio_kroger_search(input: KrogerSearchInput, ctx: Any = None) -> dict:
-            """Search Kroger grocery products by keyword. Kroger operates Kroger, Ralphs, Fred Meyer, Harris Teeter, King Soopers, Fry's and other banners. Costs 2 credits."""
-            return _run(lambda: client.kroger.search(**dump(input)))
-
-        @toolkit.tool()
-        def scavio_kroger_product(input: KrogerProductInput, ctx: Any = None) -> dict:
-            """Get detailed Kroger product information by URL, UPC, or slug. Costs 2 credits."""
-            return _run(lambda: client.kroger.product(**dump(input)))
 
     if all or enable_extract:
 
