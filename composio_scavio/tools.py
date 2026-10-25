@@ -1590,6 +1590,19 @@ class KrogerProductInput(BaseModel):
     slug: Optional[str] = Field(None, description="Product URL slug.")
 
 
+# Decathlon
+class DecathlonSearchInput(BaseModel):
+    query: str = Field(description="Search keywords (1-200 characters).")
+    country: str = Field(description="Country domain: 'fr', 'es', 'it', 'in', 'uk', 'pt' or 'net'.")
+    page: Optional[int] = Field(None, description="Results page, 1-based (1-50).")
+
+
+class DecathlonProductInput(BaseModel):
+    product_url: Optional[str] = Field(None, description="Full or relative product URL from any Decathlon domain (preferred). Provide this or product_id.")
+    product_id: Optional[str] = Field(None, description="Decathlon numeric product ID.")
+    country: str = Field(description="Country domain: 'fr', 'es', 'it', 'in', 'uk', 'pt' or 'net'.")
+
+
 # Extract is a CORE endpoint, not a platform: it is the top-level
 # client.extract(url, format=, mode=), never client.extract.extract().
 class ExtractInput(BaseModel):
@@ -1753,6 +1766,7 @@ def build_scavio_toolkit(
     enable_meta_ads: bool = False,
     enable_heb: bool = False,
     enable_kroger: bool = False,
+    enable_decathlon: bool = False,
     enable_crawl: bool = False,
     all: bool = False,
 ) -> "ExperimentalToolkit":
@@ -1809,6 +1823,7 @@ def build_scavio_toolkit(
         enable_meta_ads: Register the 3 Meta Ad Library tools. OPT-IN, defaults to False.
         enable_heb: Register the 3 HEB grocery tools. OPT-IN, defaults to False.
         enable_kroger: Register the 2 Kroger grocery tools. OPT-IN, defaults to False.
+        enable_decathlon: Register the 2 Decathlon tools. OPT-IN, defaults to False.
         enable_crawl: Register the 5 website tools of the Extract family: map a
             site's URLs, crawl a site, read a crawl's status, batch-extract a URL
             list, read a batch's status. OPT-IN, defaults to False, because a
@@ -2566,6 +2581,18 @@ def build_scavio_toolkit(
         def scavio_kroger_product(input: KrogerProductInput, ctx: Any = None) -> dict:
             """Full Kroger product detail: nutrition facts with allergens and ingredients, rating distribution, store aisle location, dietary flags (organic, non-GMO, gluten-free), SNAP eligibility, dimensions and country of origin. Pass product_url (from search) or upc. Costs 2 credits."""
             return _run(lambda: client.kroger.product(**dump(input)))
+
+    if all or enable_decathlon:
+
+        @toolkit.tool()
+        def scavio_decathlon_search(input: DecathlonSearchInput, ctx: Any = None) -> dict:
+            """Search Decathlon products by keyword across 7 country domains (FR, ES, IT, IN, UK, PT, NET). Returns product name, brand, price (cents), currency, availability, rating, review count and image. Costs 2 credits."""
+            return _run(lambda: client.decathlon.search(**dump(input)))
+
+        @toolkit.tool()
+        def scavio_decathlon_product(input: DecathlonProductInput, ctx: Any = None) -> dict:
+            """Full Decathlon product detail by URL or product ID: description, images, SKU, GTIN, color, price (cents), list price, availability, offers/variants, rating, review count, category and breadcrumbs. Costs 2 credits."""
+            return _run(lambda: client.decathlon.product(**dump(input)))
 
     if all or enable_zillow:
 
