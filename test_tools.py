@@ -690,3 +690,24 @@ def test_website_tools_never_describe_the_fetch_method(monkeypatch):
         text = ((tool.description or "") + json.dumps(tool.input_params.model_json_schema())).lower()
         for word in ("proxy", "residential", "datacenter", "headless", "browser"):
             assert word not in text, (tool.slug, word)
+
+
+def test_heb_store_id_is_forwarded(monkeypatch):
+    class _HebClient(_FakeClient):
+        def __init__(self, *args, **kwargs):
+            super().__init__()
+            self.heb = _Recorder("heb", self.calls)
+
+    monkeypatch.setattr(tools_mod, "ScavioClient", _HebClient)
+    flags = {f"enable_{p}": False for p in _PROVIDERS}
+    toolkit = build_scavio_toolkit(api_key="test", enable_heb=True, **flags)
+    by_slug = {t.slug: t for t in toolkit.tools}
+
+    search = by_slug["SCAVIO_HEB_SEARCH"]
+    out = search.execute(search.input_params(query="milk", store_id="441"), None)
+    assert out["kwargs"] == {"query": "milk", "store_id": "441"}
+
+    product = by_slug["SCAVIO_HEB_PRODUCT"]
+    out = product.execute(product.input_params(product_id="314130", store_id="441"), None)
+    assert out["method"] == "product"
+    assert out["kwargs"] == {"product_id": "314130", "store_id": "441"}

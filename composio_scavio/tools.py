@@ -1564,13 +1564,15 @@ class MetaAdsAdInput(BaseModel):
 class HebSearchInput(BaseModel):
     query: str = Field(description="Search keyword (1-500 characters).")
     page: Optional[int] = Field(None, description="Results page, 1-based.")
-    page_size: Optional[int] = Field(None, description="Results per page, 1-60. Defaults to 30; values above 60 are rejected.")
+    page_size: Optional[int] = Field(None, description="Results per page, 1-60. Defaults to 60.")
+    store_id: Optional[str] = Field(None, description="HEB store number from the HEB stores tool (store_number). Prices, stock, aisle location and assortment come from that store; the store used is echoed in data.store {store_id, name}. US only. Omit for HEB's default store.")
 
 
 class HebProductInput(BaseModel):
-    product_url: Optional[str] = Field(None, description="Full heb.com product URL (preferred). Provide this, or product_id together with slug.")
-    product_id: Optional[str] = Field(None, description="HEB product id. Requires slug when used.")
-    slug: Optional[str] = Field(None, description="Product URL slug. Required together with product_id.")
+    product_url: Optional[str] = Field(None, description="Full heb.com product URL (preferred). Provide this, or product_id (with slug, or alone when store_id is set).")
+    product_id: Optional[str] = Field(None, description="HEB product id. Needs slug, unless store_id is set (then product_id alone works).")
+    slug: Optional[str] = Field(None, description="Product URL slug. Required together with product_id unless store_id is set.")
+    store_id: Optional[str] = Field(None, description="HEB store number from the HEB stores tool (store_number). Prices, stock, aisle location and assortment come from that store; the store used is echoed in data.store {store_id, name}. US only. Omit for HEB's default store.")
 
 
 class HebStoresInput(BaseModel):
@@ -2557,12 +2559,12 @@ def build_scavio_toolkit(
 
         @toolkit.tool()
         def scavio_heb_search(input: HebSearchInput, ctx: Any = None) -> dict:
-            """Search HEB grocery products by keyword: price (cents), sale status, unit price, size, UPC, stock, EBT/SNAP eligibility, aisle location and product URL. Costs 2 credits."""
+            """Search HEB grocery products by keyword: price (cents), sale status, unit price, size, UPC, stock, EBT/SNAP eligibility, aisle location and product URL. Pass store_id (from scavio_heb_stores) for that store's prices, stock and assortment; the store is echoed in data.store. Costs 2 credits."""
             return _run(lambda: client.heb.search(**dump(input)))
 
         @toolkit.tool()
         def scavio_heb_product(input: HebProductInput, ctx: Any = None) -> dict:
-            """Full HEB product detail: nutrition facts, ingredients, description, images, similar products, coupons, EBT/SNAP eligibility and breadcrumbs. Pass product_url (from search) or slug + product_id. Costs 2 credits."""
+            """Full HEB product detail: nutrition facts, ingredients, description, images, similar products, coupons, EBT/SNAP eligibility and breadcrumbs. Pass product_url (from search) or slug + product_id. With store_id (from scavio_heb_stores) the price, stock and aisle location are that store's, product_id alone is enough, and the store is echoed in data.store. Costs 2 credits."""
             return _run(lambda: client.heb.product(**dump(input)))
 
         @toolkit.tool()
