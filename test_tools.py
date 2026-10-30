@@ -464,7 +464,7 @@ def test_every_tool_description_states_a_credit_cost(monkeypatch):
 # from the frozen per-platform cost in gtm/fanout-naming.json.
 FLAT_PLATFORM_CREDITS = {
     "ebay": 1, "target": 1, "home_depot": 2, "zillow": 1, "booking": 1,
-    "tripadvisor": 2, "indeed": 2, "airbnb": 1, "glassdoor": 1, "yelp": 2,
+    "tripadvisor": 2, "indeed": 2, "airbnb": 1, "glassdoor": 2, "yelp": 2,
     "app_store": 1, "google_play": 2, "sec": 1, "redfin": 1,
     "companies_house": 1, "g2": 5, "capterra": 2, "google_ads": 1, "meta_ads": 1,
 }

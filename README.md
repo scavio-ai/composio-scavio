@@ -222,8 +222,8 @@ Every tool states its cost in its own description. Flat-priced platforms:
 
 | Cost | Platforms |
 |------|-----------|
-| 1 credit | Google (14), Reddit (12), TikTok (11), TikTok Shop (8), X (11), Amazon (3 billable), eBay (3), Target (5), Zillow (3), Booking.com (3), Airbnb (3), Glassdoor (4), App Store (3), SEC EDGAR (6), Redfin (3), Companies House (4), Google Ads (3), Meta Ads (3), and the 11 remaining YouTube tools |
-| 2 credits | `SCAVIO_YOUTUBE_SEARCH`, `SCAVIO_YOUTUBE_SHORTS`, Home Depot (3), Tripadvisor (4), Indeed (4), Yelp (3), Google Play (3), Capterra (3) |
+| 1 credit | Google (14), Reddit (12), TikTok (11), TikTok Shop (8), X (11), Amazon (3 billable), eBay (3), Target (5), Zillow (3), Booking.com (3), Airbnb (3), App Store (3), SEC EDGAR (6), Redfin (3), Companies House (4), Google Ads (3), Meta Ads (3), and the 11 remaining YouTube tools |
+| 2 credits | `SCAVIO_YOUTUBE_SEARCH`, `SCAVIO_YOUTUBE_SHORTS`, Home Depot (3), Tripadvisor (4), Indeed (4), Yelp (3), Google Play (3), Capterra (3), Glassdoor (4) |
 | 3 credits | `SCAVIO_YOUTUBE_STREAMS` |
 | 5 credits | `SCAVIO_YOUTUBE_TRANSCRIPT`, G2 (3) |
 | 10 credits | LinkedIn `PERSON_POSTS`, `COMPANY_POSTS`, `SEARCH_JOBS`, `POST_COMMENTS` |

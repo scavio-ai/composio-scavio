@@ -2695,22 +2695,22 @@ def build_scavio_toolkit(
 
         @toolkit.tool()
         def scavio_glassdoor_companies(input: GlassdoorCompaniesInput, ctx: Any = None) -> dict:
-            """START HERE. Resolve a company NAME to the employer_id every other Glassdoor method is keyed by, ranked by Glassdoor and de-duplicated. Costs 1 credit."""
+            """START HERE. Resolve a company NAME to the employer_id every other Glassdoor method is keyed by, ranked by Glassdoor and de-duplicated. Costs 2 credits."""
             return _run(lambda: client.glassdoor.companies(**dump(input)))
 
         @toolkit.tool()
         def scavio_glassdoor_company(input: GlassdoorCompanyInput, ctx: Any = None) -> dict:
-            """Glassdoor employer profile: description, mission, industry, sector, HQ, size and revenue bands, stock symbol, year founded, overall and per-category ratings, star distribution, CEO approval, awards, FAQ and the five server-rendered reviews. Also returns reviews_url and salaries_url, which reviews() and salaries() accept as url to save a fetch. Provide employer_id or url. Costs 1 credit."""
+            """Glassdoor employer profile: description, mission, industry, sector, HQ, size and revenue bands, stock symbol, year founded, overall and per-category ratings, star distribution, CEO approval, awards, FAQ and the five server-rendered reviews. Also returns reviews_url and salaries_url, which reviews() and salaries() accept as url to save a fetch. Provide employer_id or url. Costs 2 credits."""
             return _run(lambda: client.glassdoor.company(**dump(input)))
 
         @toolkit.tool()
         def scavio_glassdoor_reviews(input: GlassdoorReviewsInput, ctx: Any = None) -> dict:
-            """Up to THREE full Glassdoor reviews - the cap is Glassdoor's login wall - with per-axis scores, pros, cons, advice, job title, location, employment status and employer response, plus complete rating statistics, star distribution, aggregate pro/con highlight terms and per-job-title review counts. There is no page param: move the window with category and employment_status. Provide employer_id or url. Costs 1 credit."""
+            """Up to THREE full Glassdoor reviews - the cap is Glassdoor's login wall - with per-axis scores, pros, cons, advice, job title, location, employment status and employer response, plus complete rating statistics, star distribution, aggregate pro/con highlight terms and per-job-title review counts. There is no page param: move the window with category and employment_status. Provide employer_id or url. Costs 2 credits."""
             return _run(lambda: client.glassdoor.reviews(**dump(input)))
 
         @toolkit.tool()
         def scavio_glassdoor_salaries(input: GlassdoorSalariesInput, ctx: Any = None) -> dict:
-            """Glassdoor salaries by job title, 10 titles per page: base-pay and total-pay percentiles P10-P90 with medians called out, sample counts, currency, pay period and last-reported date. The figures are Glassdoor's ESTIMATES for the title, not individual reported salaries. Provide employer_id or url. Costs 1 credit."""
+            """Glassdoor salaries by job title, 10 titles per page: base-pay and total-pay percentiles P10-P90 with medians called out, sample counts, currency, pay period and last-reported date. The figures are Glassdoor's ESTIMATES for the title, not individual reported salaries. Provide employer_id or url. Costs 2 credits."""
             return _run(lambda: client.glassdoor.salaries(**dump(input)))
 
     if all or enable_yelp:
